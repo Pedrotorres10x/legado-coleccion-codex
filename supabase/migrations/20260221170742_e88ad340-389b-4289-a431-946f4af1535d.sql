@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN gdpr_accepted_at timestamptz;

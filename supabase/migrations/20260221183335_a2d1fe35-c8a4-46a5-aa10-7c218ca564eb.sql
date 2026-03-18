@@ -1,0 +1,15 @@
+ALTER TABLE public.properties
+  ADD COLUMN IF NOT EXISTS has_garden boolean DEFAULT null,
+  ADD COLUMN IF NOT EXISTS features text[] DEFAULT '{}'::text[],
+  ADD COLUMN IF NOT EXISTS built_area numeric DEFAULT null,
+  ADD COLUMN IF NOT EXISTS surface_area numeric DEFAULT null,
+  ADD COLUMN IF NOT EXISTS city text DEFAULT null,
+  ADD COLUMN IF NOT EXISTS zone text DEFAULT null,
+  ADD COLUMN IF NOT EXISTS energy_cert text DEFAULT null,
+  ADD COLUMN IF NOT EXISTS operation text DEFAULT 'venta',
+  ADD COLUMN IF NOT EXISTS commission numeric DEFAULT null,
+  ADD COLUMN IF NOT EXISTS owner_price numeric DEFAULT null,
+  ADD COLUMN IF NOT EXISTS crm_reference text DEFAULT null,
+  ADD COLUMN IF NOT EXISTS virtual_tour_url text DEFAULT null,
+  ADD COLUMN IF NOT EXISTS videos text[] DEFAULT null,
+  ADD COLUMN IF NOT EXISTS portal_token text DEFAULT null;

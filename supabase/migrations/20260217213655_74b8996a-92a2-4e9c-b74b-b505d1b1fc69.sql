@@ -1,0 +1,1 @@
+ALTER TABLE public.leads DROP CONSTRAINT IF EXISTS leads_property_id_fkey;

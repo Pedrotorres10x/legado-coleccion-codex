@@ -1,0 +1,78 @@
+{
+  "updated_at": "2026-03-16",
+  "scope": {
+    "province": "Alicante",
+    "positioning": "360 property buying platform for foreign buyers across Alicante province",
+    "notes": [
+      "Alicante province is the main umbrella.",
+      "Costa Blanca and Vega Baja are important clusters within the province, not separate strategic umbrellas.",
+      "The site should not behave like a simple listing portal.",
+      "Content must reinforce integrated buyer support: property search, area guidance, mortgage broker support, legal coordination, and end-to-end assistance."
+    ]
+  },
+  "macrozones": [
+    {
+      "slug": "marina-baixa-norte",
+      "label": "Marina Baixa / norte",
+      "municipalities": [
+        "Benidorm",
+        "Altea",
+        "Finestrat",
+        "Villajoyosa",
+        "La Nucia",
+        "Alfaz del Pi",
+        "Calpe",
+        "Moraira",
+        "Denia",
+        "Javea"
+      ]
+    },
+    {
+      "slug": "alicante-centro",
+      "label": "Alicante centro",
+      "municipalities": [
+        "Alicante City",
+        "Playa de San Juan",
+        "El Campello",
+        "Santa Pola"
+      ]
+    },
+    {
+      "slug": "vega-baja-sur",
+      "label": "Vega Baja / sur",
+      "municipalities": [
+        "Torrevieja",
+        "Orihuela Costa",
+        "Guardamar del Segura",
+        "Ciudad Quesada",
+        "Rojales",
+        "Pilar de la Horadada",
+        "San Miguel de Salinas",
+        "Villamartin",
+        "La Zenia",
+        "Cabo Roig",
+        "Campoamor"
+      ]
+    }
+  ],
+  "excluded_outside_scope": [
+    "Los Alcazares"
+  ],
+  "automation_rules": {
+    "add_municipality_when": [
+      "The municipality or microarea is present in the live property feed or public site inventory.",
+      "There is clear buyer intent or international demand value for Alicante province.",
+      "It fits the province-first structure and supports a useful content cluster."
+    ],
+    "remove_municipality_when": [
+      "It is outside Alicante province.",
+      "It duplicates another municipality or should be treated as a subarea instead of a standalone municipality.",
+      "It has no meaningful inventory, no strategic content value, or creates unnecessary dilution."
+    ],
+    "do_not_do": [
+      "Do not expand outside Alicante province unless explicitly requested.",
+      "Do not over-prioritize Vega Baja at the expense of the province-wide structure.",
+      "Do not treat the website as a simple portal; keep the 360 buyer-platform positioning."
+    ]
+  }
+}

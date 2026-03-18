@@ -1,0 +1,64 @@
+project_id = "vrywyqpxmmzikaedjoxt"
+
+[functions.brevo-manager]
+verify_jwt = false
+
+[functions.crm-proxy]
+verify_jwt = false
+
+[functions.fill-blog-images]
+verify_jwt = false
+
+[functions.generate-blog-article]
+verify_jwt = false
+
+[functions.generate-vapid-keys]
+verify_jwt = false
+
+[functions.get-leads]
+verify_jwt = false
+
+[functions.meta-capi]
+verify_jwt = false
+
+[functions.notify-lead]
+verify_jwt = false
+
+[functions.property-og]
+verify_jwt = false
+
+[functions.push-new-property]
+verify_jwt = false
+
+[functions.push-price-drop]
+verify_jwt = false
+
+[functions.push-weekly-highlights]
+verify_jwt = false
+
+[functions.refresh-featured]
+verify_jwt = false
+
+[functions.rotate-blog]
+verify_jwt = false
+
+[functions.send-newsletter]
+verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false
+
+[functions.similar-properties]
+verify_jwt = false
+
+[functions.sitemap]
+verify_jwt = false
+
+[functions.subscribe-push]
+verify_jwt = false
+
+[functions.sync-featured-to-properties]
+verify_jwt = false
+
+[functions.translate]
+verify_jwt = false

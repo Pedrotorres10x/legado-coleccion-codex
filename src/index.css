@@ -1,0 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Blanco Ibiza · Luxury Mediterranean ── */
+    --background: 36 20% 97%;        /* Blanco roto cálido */
+    --foreground: 214 35% 14%;       /* Azul marino profundo */
+
+    --card: 0 0% 100%;               /* Blanco puro para cards */
+    --card-foreground: 214 35% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 214 35% 14%;
+
+    --primary: 38 72% 44%;           /* Dorado mediterráneo */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 30% 94%;        /* Azul cielo muy claro */
+    --secondary-foreground: 214 35% 14%;
+
+    --muted: 36 15% 93%;             /* Crema suave */
+    --muted-foreground: 214 20% 45%; /* Azul pizarra */
+
+    --accent: 210 55% 28%;           /* Azul cobalto mediterráneo */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 42%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 18% 88%;           /* Gris azulado suave */
+    --input: 214 18% 90%;
+    --ring: 38 72% 44%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 214 35% 14%;
+    --sidebar-foreground: 36 20% 93%;
+    --sidebar-primary: 38 72% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 30% 20%;
+    --sidebar-accent-foreground: 36 20% 93%;
+    --sidebar-border: 214 25% 22%;
+    --sidebar-ring: 38 72% 44%;
+
+    --gold: 38 72% 44%;
+    --gold-light: 38 62% 62%;
+    --gold-dark: 38 82% 30%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  /* Gradiente dorado mediterráneo — más cálido y luminoso */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(38 80% 52%), hsl(38 72% 40%), hsl(38 90% 28%));
+  }
+
+  .bg-gradient-gold {
+    background-image: linear-gradient(135deg, hsl(38 75% 50%), hsl(38 82% 35%));
+  }
+
+  /* Gradiente azul mediterráneo para secciones */
+  .bg-gradient-med {
+    background-image: linear-gradient(160deg, hsl(214 45% 16%) 0%, hsl(210 55% 22%) 100%);
+  }
+
+  /* Glass claro para hero sobre foto */
+  .glass-light {
+    background: hsl(0 0% 100% / 0.08);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(0 0% 100% / 0.18);
+  }
+
+  /* Glass claro — Blanco Ibiza (reemplaza el anterior glass-dark) */
+  .glass-dark {
+    background: hsl(0 0% 100% / 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(214 18% 88% / 0.8);
+    box-shadow: 0 2px 20px hsl(214 35% 14% / 0.07);
+  }
+
+  /* Card sombra mediterránea sutil */
+  .card-med {
+    background: hsl(0 0% 100%);
+    border: 1px solid hsl(214 18% 90%);
+    box-shadow: 0 4px 24px hsl(214 35% 14% / 0.07), 0 1px 4px hsl(214 35% 14% / 0.05);
+  }
+
+  /* Luxury shimmer effect */
+  .shimmer-gold {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-gold::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(38, 70%, 65%, 0.3), transparent);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+  }
+
+  /* Luxury divider */
+  .luxury-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(38 70% 44% / 0.35), transparent);
+  }
+
+  /* Pulse ring dorado */
+  .pulse-ring {
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(38 70% 44% / 0.4); }
+    50% { box-shadow: 0 0 0 12px hsl(38 70% 44% / 0); }
+  }
+
+  /* Image reveal */
+  .reveal-up {
+    animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes reveal-up {
+    from { opacity: 0; transform: translateY(40px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .enter-fade-up {
+    animation: enter-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes enter-fade-up {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .enter-fade-in {
+    animation: enter-fade-in 0.7s ease-out both;
+  }
+  @keyframes enter-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-hero-kenburns {
+    animation: hero-kenburns 22s linear infinite alternate;
+    transform-origin: center center;
+  }
+  @keyframes hero-kenburns {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+  }
+
+  .animate-floating-bob {
+    animation: floating-bob 2.2s ease-in-out infinite;
+  }
+  @keyframes floating-bob {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(8px); opacity: 0.4; }
+  }
+
+  /* Scrollbar hide */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Glass premium — fondo claro Blanco Ibiza */
+  .glass-premium {
+    background: hsl(0 0% 100% / 0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(214 18% 88% / 0.9);
+    box-shadow: 0 4px 24px hsl(214 35% 14% / 0.07), 0 1px 4px hsl(214 35% 14% / 0.04);
+  }
+
+  /* Gold border glow */
+  .border-glow-gold {
+    border: 1px solid hsl(38 70% 44% / 0.3);
+    box-shadow: 0 0 20px hsl(38 70% 44% / 0.08);
+  }
+
+  /* Content protection — images */
+  img,
+  [role="img"] {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: auto;
+    -webkit-touch-callout: none; /* iOS long-press save */
+  }
+
+  /* Protected text (prices, addresses, data) */
+  .protected-text,
+  [data-protected] {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Watermark */
+  .watermark-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+  .watermark-overlay::after {
+    content: 'RK LEGADO';
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: hsla(0, 0%, 100%, 0.35);
+    pointer-events: none;
+    z-index: 5;
+    text-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.5);
+  }
+
+  /* Diagonal repeating watermark for large images */
+  .watermark-full {
+    position: relative;
+    overflow: hidden;
+  }
+  .watermark-full::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='180'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Playfair Display,serif' font-size='18' font-weight='700' fill='rgba(255,255,255,0.12)' transform='rotate(-30 150 90)' letter-spacing='6'%3ERK LEGADO%3C/text%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+
+  /* Block print */
+  @media print {
+    body {
+      display: none !important;
+    }
+  }
+}
