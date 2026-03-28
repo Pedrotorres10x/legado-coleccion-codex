@@ -36,8 +36,8 @@ const Index = () => {
       <HeroSection />
       <FeaturedProperties />
       <PersonalizedNextStep
-        title="A more relevant homepage for each returning buyer"
-        description="If you've already explored Finestrat, mortgage guidance, Benidorm apartments or specific homes, this section helps you resume the right route instead of showing the same generic starting point again."
+        title="Do not restart the search if the search already has direction"
+        description="If a buyer has already explored an area, a guide or a specific home, the useful move is to continue from that signal, not send them back to a generic starting point."
       />
       <Suspense fallback={null}>
         <DeferredSection minHeight={180}>
@@ -60,8 +60,8 @@ const Index = () => {
         </DeferredSection>
         <DeferredSection minHeight={380}>
           <SeoHubSection
-            title="Find the right route, then move into real property pages"
-            description="Start from the main Alicante province landing, jump into the strongest area routes and use the guides only when they help you shortlist faster. The goal is always to reach concrete homes and their enquiry forms with more confidence."
+            title="Start with the right route. Then test real properties."
+            description="Use the strongest area pages and buyer guides to narrow the field faster. The point is not more content. The point is reaching the right property pages with better judgement."
           />
         </DeferredSection>
         <DeferredSection minHeight={260}>

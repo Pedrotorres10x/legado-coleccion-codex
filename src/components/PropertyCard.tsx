@@ -13,7 +13,7 @@ import { isDisposableEmail, checkSessionLimit, incrementSessionCount, createInte
 import { propertyUrl } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createLocalLead, syncLeadStatusToCRM } from "@/lib/leads";
-import property1 from "@/assets/property-1.jpg";
+import property1 from "@/assets/property-1.webp";
 import { usePersonalization } from "@/hooks/usePersonalization";
 import { getIntentSummaryPayload, propertyMatchesIntent } from "@/lib/personalization";
 
@@ -320,13 +320,13 @@ const PropertyCard = ({ property, index = 0 }: { property: ExternalProperty; ind
             </h3>
           </Link>
 
-          <div className="flex items-center gap-1 text-muted-foreground text-xs">
+          <div className="flex items-center gap-1 text-muted-foreground text-xs min-w-0">
             <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
             <span className="line-clamp-1">{property.location}</span>
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-3 text-muted-foreground text-xs pt-2 border-t border-border/50">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-muted-foreground text-xs pt-2 border-t border-border/50">
             {property.bedrooms > 0 && (
               <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {property.bedrooms} hab.</span>
             )}
@@ -334,12 +334,12 @@ const PropertyCard = ({ property, index = 0 }: { property: ExternalProperty; ind
               <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> {property.bathrooms} baños</span>
             )}
             {(property.area_m2 || property.surface_area) ? (
-              <span className="flex items-center gap-1 ml-auto"><Maximize className="w-3.5 h-3.5" /> {property.area_m2 || property.surface_area} m²</span>
+              <span className="flex items-center gap-1 sm:ml-auto"><Maximize className="w-3.5 h-3.5" /> {property.area_m2 || property.surface_area} m²</span>
             ) : null}
           </div>
 
           {/* CTA row */}
-          <div className="flex gap-2 pt-1">
+          <div className="flex flex-col sm:flex-row gap-2 pt-1">
             <Link to={propertyUrl(property)} className="flex-1" tabIndex={showForm ? -1 : 0}>
               <Button
                 size="sm"

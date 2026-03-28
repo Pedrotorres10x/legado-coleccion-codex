@@ -53,7 +53,7 @@ serve(async (req) => {
 
   try {
     const { property_id, city, province, price, property_type } = await req.json() as SimilarPropertiesRequest;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
     // Fetch candidates from CRM - get a broad set
     if (!CRM_BASE_URL) throw new Error("CRM_BASE_URL is not configured");
@@ -95,7 +95,7 @@ serve(async (req) => {
 
     const top = candidates.slice(0, 12);
 
-    if (!LOVABLE_API_KEY || top.length <= 3) {
+    if (!OPENAI_API_KEY || top.length <= 3) {
       // No AI, just return top 3 by zone/price proximity
       const scored: SimilarScoredProperty[] = top.map((property) => {
         let score = 0;
@@ -123,17 +123,16 @@ serve(async (req) => {
       surface: property.surface_area,
     }));
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [{
-          role: "user",
-          content: `You are a Spanish real estate expert specializing in the Costa Blanca and Alicante province. You understand the geography perfectly:
+        model: "gpt-4.1-mini",
+        instructions: "You are a Spanish real estate expert specializing in Costa Blanca geography. Return only valid JSON.",
+        input: `You understand the geography perfectly:
 
 IMPORTANT ZONE RULES (Costa Blanca):
 - Torrevieja, Orihuela Costa, Pilar de la Horada, San Miguel de Salinas, Los Montesinos = Vega Baja / Costa Blanca Sur
@@ -145,34 +144,36 @@ IMPORTANT ZONE RULES (Costa Blanca):
 
 Torrevieja and Polop are NOT the same zone (60+ km apart). Algorfa and Torrevieja ARE nearby (~15km). 
 
-Given a property in ${city}${province ? `, ${province}` : ""} priced at ${price}€ (type: ${property_type}), pick the 3 most similar from this list. Priority: 1) SAME ZONE (most important - cities within ~20km), 2) similar price (±25%), 3) similar type. Return ONLY a JSON array of IDs: ["id1","id2","id3"]
+Given a property in ${city}${province ? `, ${province}` : ""} priced at ${price}€ (type: ${property_type}), pick the 3 most similar from this list. Priority: 1) SAME ZONE (most important - cities within ~20km), 2) similar price (±25%), 3) similar type. Return JSON with exactly {"ids":["id1","id2","id3"]}.
 
 Properties:
 ${JSON.stringify(summary)}`,
-        }],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "similar_properties_ids",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                ids: {
+                  type: "array",
+                  items: { type: "string" },
+                },
+              },
+              required: ["ids"],
+              additionalProperties: false,
+            },
+          },
+        },
       }),
     });
 
     if (aiRes.ok) {
       const aiData = await aiRes.json();
-      const content = aiData.choices?.[0]?.message?.content || "";
-
-      // Robust extraction: strip markdown, find array, fix common issues
-      let cleaned = content
-        .replace(/```json\s*/gi, "")
-        .replace(/```\s*/g, "")
-        .trim();
-      const arrStart = cleaned.indexOf("[");
-      const arrEnd = cleaned.lastIndexOf("]");
-      if (arrStart !== -1 && arrEnd !== -1) {
-        cleaned = cleaned.substring(arrStart, arrEnd + 1)
-          .replace(/,\s*]/g, "]")
-          .trim();
-        cleaned = stripControlCharacters(cleaned);
-      }
-
       try {
-        const ids: string[] = JSON.parse(cleaned);
+        const parsed = JSON.parse(stripControlCharacters(aiData.output_text || "{}"));
+        const ids: string[] = Array.isArray(parsed.ids) ? parsed.ids : [];
         const result = ids
           .map((id) => top.find((property) => property.id === id))
           .filter((property): property is CrmPropertyCandidate => Boolean(property))

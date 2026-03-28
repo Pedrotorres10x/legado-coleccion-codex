@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, X, SlidersHorizontal, Globe } from "lucide-react";
+import { Search, X, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -42,7 +42,6 @@ const formatPrice = (v: number) =>
 type FilterValue = ExternalPropertyFilters[keyof ExternalPropertyFilters];
 
 const PropertyFiltersBar = ({ filters, sort, onFiltersChange, onSortChange, total, cities = [] }: Props) => {
-  const isMobile = useIsMobile();
   const [expanded, setExpanded] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([
     filters.minPrice || 0,
@@ -64,7 +63,7 @@ const PropertyFiltersBar = ({ filters, sort, onFiltersChange, onSortChange, tota
   return (
     <div className="space-y-4">
       {/* Top bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3 flex-wrap">
           <p className="text-muted-foreground text-sm">
             <span className="text-foreground font-semibold">{total}</span> propiedades
@@ -75,12 +74,12 @@ const PropertyFiltersBar = ({ filters, sort, onFiltersChange, onSortChange, tota
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[auto_minmax(0,1fr)] lg:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setExpanded((v) => !v)}
-            className="border-border text-xs h-9 px-3"
+            className="border-border text-xs h-9 px-3 w-full sm:w-auto"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5" />
             Filtrar
@@ -93,7 +92,7 @@ const PropertyFiltersBar = ({ filters, sort, onFiltersChange, onSortChange, tota
           <NativeSelect
             value={sort}
             onChange={(e) => onSortChange(e.target.value as ExternalPropertySort)}
-            className="flex-1 sm:w-40 md:w-[180px] bg-card border-border text-xs sm:text-sm"
+            className="w-full sm:min-w-[180px] bg-card border-border text-xs sm:text-sm"
             aria-label="Ordenar propiedades"
           >
             <option value="newest">Más recientes</option>
@@ -107,9 +106,9 @@ const PropertyFiltersBar = ({ filters, sort, onFiltersChange, onSortChange, tota
       {/* Filters panel — collapsed on mobile by default */}
       {expanded && (
           <div
-            className="glass-dark rounded-xl p-6 overflow-hidden enter-fade-up"
+            className="glass-dark rounded-xl p-4 sm:p-6 overflow-hidden enter-fade-up"
           >
-            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 sm:gap-6">
               {/* Country / scope */}
               <div>
                 <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">País</label>
@@ -206,10 +205,10 @@ const PropertyFiltersBar = ({ filters, sort, onFiltersChange, onSortChange, tota
             </div>
 
             {/* Price range */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3">
+              <div className="mt-6">
+              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <label className="text-xs text-muted-foreground uppercase tracking-wider">Rango de precio</label>
-                <span className="text-primary text-sm font-medium">
+                <span className="text-primary text-sm font-medium break-words">
                   {formatPrice(priceRange[0])} — {formatPrice(priceRange[1])}
                 </span>
               </div>

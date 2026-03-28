@@ -1,7 +1,6 @@
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://tu-dominio.com";
-const CRM_BASE_URL = (Deno.env.get("CRM_BASE_URL") ?? "").replace(/\/+$/, "");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +16,30 @@ const TYPE_LABELS: Record<string, string> = {
 
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const buildPropertySlug = (title: string, city: string, id: string) =>
+  `${slugify(`${title} ${city}`)}-${id.replace(/-/g, "").slice(-5)}`;
+
+const getSlugBase = (slug: string) => {
+  const parts = slug.split("-");
+  const last = parts[parts.length - 1] ?? "";
+  return /^[a-f0-9]{4,12}$/i.test(last) ? parts.slice(0, -1).join("-") : slug;
+};
+
+const toAbsoluteImageUrl = (image: string) => {
+  if (/^https?:\/\//i.test(image)) return image;
+  return `${SITE_URL}${image.startsWith("/") ? image : `/${image}`}`;
+};
 
 // Crawlers that need OG tags (WhatsApp, Facebook, Twitter, Telegram, etc.)
 const CRAWLER_RE = /bot|crawl|spider|slurp|facebookexternalhit|WhatsApp|Twitterbot|TelegramBot|LinkedInBot|Discordbot|Slack/i;
@@ -44,9 +67,31 @@ async function lookupSlug(slug: string): Promise<string | null> {
     `${SUPABASE_URL}/rest/v1/property_slugs?slug=eq.${encodeURIComponent(slug)}&select=property_id&limit=1`,
     { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } },
   );
-  if (!res.ok) return null;
-  const rows = await res.json();
-  return rows?.[0]?.property_id ?? null;
+  if (res.ok) {
+    const rows = await res.json();
+    const propertyId = rows?.[0]?.property_id ?? null;
+    if (propertyId) return propertyId;
+  }
+
+  const slugParts = slug.split("-");
+  const suffix = slugParts[slugParts.length - 1];
+  if (!suffix || !/^[a-f0-9]{4,12}$/i.test(suffix)) {
+    return null;
+  }
+
+  const fallbackUrl = new URL(`${SUPABASE_URL}/functions/v1/crm-proxy`);
+  fallbackUrl.searchParams.set("endpoint", "public-properties");
+  fallbackUrl.searchParams.set("id_suffix", suffix);
+
+  const fallbackRes = await fetch(fallbackUrl, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!fallbackRes.ok) return null;
+  const fallbackData = await fallbackRes.json();
+  return fallbackData?.property_id ?? null;
 }
 
 async function lookupSlugById(id: string): Promise<string | null> {
@@ -60,8 +105,10 @@ async function lookupSlugById(id: string): Promise<string | null> {
 }
 
 async function fetchProperty(id: string): Promise<Record<string, unknown> | null> {
-  if (!CRM_BASE_URL) return null;
-  const url = `${CRM_BASE_URL}/public-properties?id=${encodeURIComponent(id)}`;
+  if (!SUPABASE_URL) return null;
+  const url = new URL(`${SUPABASE_URL}/functions/v1/crm-proxy`);
+  url.searchParams.set("endpoint", "public-properties");
+  url.searchParams.set("id", id);
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -72,6 +119,45 @@ async function fetchProperty(id: string): Promise<Record<string, unknown> | null
   return data.property ?? data.properties?.[0] ?? null;
 }
 
+async function findPropertyBySlugBase(slug: string): Promise<Record<string, unknown> | null> {
+  if (!SUPABASE_URL) return null;
+
+  const targetBase = getSlugBase(slug);
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const url = new URL(`${SUPABASE_URL}/functions/v1/crm-proxy`);
+    url.searchParams.set("endpoint", "public-properties");
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("limit", "50");
+
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const properties = Array.isArray(data?.properties) ? data.properties : [];
+    const match = properties.find((property) => {
+      const title = String(property?.title ?? "");
+      const city = String(property?.city ?? property?.location ?? "");
+      const id = String(property?.id ?? "");
+      if (!title || !id) return false;
+      return getSlugBase(buildPropertySlug(title, city, id)) === targetBase;
+    });
+
+    if (match) return match;
+
+    totalPages = Number(data?.total_pages ?? page);
+    page += 1;
+  } while (page <= totalPages);
+
+  return null;
+}
+
 // ── Build OG HTML ────────────────────────────────────────────────────────
 
 function buildOgHtml(property: Record<string, unknown>, canonicalSlug: string): string {
@@ -79,30 +165,40 @@ function buildOgHtml(property: Record<string, unknown>, canonicalSlug: string): 
   const city = ((property.city ?? property.location ?? "") as string);
   const province = ((property.province ?? "") as string);
   const priceNum = property.price as number | undefined;
-  const priceStr = priceNum ? `${priceNum.toLocaleString("es-ES")} EUR` : "";
+  const priceStr = priceNum ? `${priceNum.toLocaleString("es-ES")} €` : "";
   const bedrooms = (property.bedrooms as number) ?? 0;
   const bathrooms = (property.bathrooms as number) ?? 0;
   const area = ((property.surface_area ?? property.area_m2 ?? 0) as number);
   const type = TYPE_LABELS[(property.property_type as string) ?? ""] ?? ((property.property_type as string) ?? "");
   const images = (property.images as string[]) ?? [];
   // Skip logo images — use first real property photo
-  const image = images.find(img => !img.toLowerCase().includes("/logo.")) 
-    ?? images[0] 
-    ?? `${SITE_URL}/og-image.jpg`;
+  const image = toAbsoluteImageUrl(
+    images.find(img => !img.toLowerCase().includes("/logo."))
+      ?? images[0]
+      ?? `${SITE_URL}/og-image.jpg`
+  );
   const location = [city, province].filter(Boolean).join(", ");
 
-  const descParts: string[] = [];
-  if (type) descParts.push(type);
-  if (location) descParts.push(`en ${location}`);
-  if (priceStr) descParts.push(priceStr);
-  if (bedrooms > 0) descParts.push(`${bedrooms} hab.`);
-  if (bathrooms > 0) descParts.push(`${bathrooms} baños`);
-  if (area > 0) descParts.push(`${area} m²`);
-  const description = descParts.join(" · ");
-
   const pageUrl = `${SITE_URL}/propiedad/${canonicalSlug}`;
-  const ogTitle = `${title} | ${priceStr} — Legado Inmobiliaria`;
-  const ogDesc = description || `Descubre esta propiedad exclusiva en ${location} con Legado Inmobiliaria`;
+  const headline = [type, location ? `en ${location}` : undefined].filter(Boolean).join(" ");
+  const facts = [
+    priceStr || undefined,
+    bedrooms > 0 ? `${bedrooms} dormitorios` : undefined,
+    bathrooms > 0 ? `${bathrooms} baños` : undefined,
+    area > 0 ? `${area} m²` : undefined,
+  ].filter(Boolean);
+  const teaser = typeof property.description === "string"
+    ? property.description.replace(/\s+/g, " ").trim().slice(0, 150)
+    : "";
+  const ogTitle = [title, priceStr, "Legado Inmobiliaria"].filter(Boolean).join(" | ");
+  const ogDesc = [
+    headline || "Propiedad exclusiva en Costa Blanca",
+    facts.length ? facts.join(" · ") : undefined,
+    teaser || "Una oportunidad singular para compradores que valoran ubicación, imagen y patrimonio.",
+  ]
+    .filter(Boolean)
+    .join(" — ");
+  const imageAlt = [title, location, "Legado Inmobiliaria"].filter(Boolean).join(" | ");
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -110,19 +206,26 @@ function buildOgHtml(property: Record<string, unknown>, canonicalSlug: string): 
   <meta charset="UTF-8" />
   <title>${esc(ogTitle)}</title>
   <meta name="description" content="${esc(ogDesc)}" />
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content="product" />
   <meta property="og:site_name" content="Legado Inmobiliaria" />
   <meta property="og:title" content="${esc(ogTitle)}" />
   <meta property="og:description" content="${esc(ogDesc)}" />
   <meta property="og:url" content="${esc(pageUrl)}" />
   <meta property="og:image" content="${esc(image)}" />
+  <meta property="og:image:secure_url" content="${esc(image)}" />
   <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="800" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${esc(imageAlt)}" />
   <meta property="og:locale" content="es_ES" />
+  <meta property="product:price:amount" content="${priceNum ? esc(String(priceNum)) : ""}" />
+  <meta property="product:price:currency" content="EUR" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${esc(ogTitle)}" />
   <meta name="twitter:description" content="${esc(ogDesc)}" />
   <meta name="twitter:image" content="${esc(image)}" />
+  <meta name="twitter:image:alt" content="${esc(imageAlt)}" />
+  <meta name="twitter:url" content="${esc(pageUrl)}" />
+  <link rel="canonical" href="${esc(pageUrl)}" />
 </head>
 <body>
   <p><a href="${esc(pageUrl)}">${esc(ogTitle)}</a></p>
@@ -137,29 +240,39 @@ function injectOgIntoIndex(indexHtml: string, property: Record<string, unknown>,
   const city = ((property.city ?? property.location ?? "") as string);
   const province = ((property.province ?? "") as string);
   const priceNum = property.price as number | undefined;
-  const priceStr = priceNum ? `${priceNum.toLocaleString("es-ES")} EUR` : "";
+  const priceStr = priceNum ? `${priceNum.toLocaleString("es-ES")} €` : "";
   const bedrooms = (property.bedrooms as number) ?? 0;
   const bathrooms = (property.bathrooms as number) ?? 0;
   const area = ((property.surface_area ?? property.area_m2 ?? 0) as number);
   const type = TYPE_LABELS[(property.property_type as string) ?? ""] ?? ((property.property_type as string) ?? "");
   const images = (property.images as string[]) ?? [];
-  const image = images.find(img => !img.toLowerCase().includes("/logo.")) 
-    ?? images[0] 
-    ?? `${SITE_URL}/og-image.jpg`;
+  const image = toAbsoluteImageUrl(
+    images.find(img => !img.toLowerCase().includes("/logo."))
+      ?? images[0]
+      ?? `${SITE_URL}/og-image.jpg`
+  );
   const location = [city, province].filter(Boolean).join(", ");
 
-  const descParts: string[] = [];
-  if (type) descParts.push(type);
-  if (location) descParts.push(`en ${location}`);
-  if (priceStr) descParts.push(priceStr);
-  if (bedrooms > 0) descParts.push(`${bedrooms} hab.`);
-  if (bathrooms > 0) descParts.push(`${bathrooms} baños`);
-  if (area > 0) descParts.push(`${area} m²`);
-  const description = descParts.join(" · ");
-
   const pageUrl = `${SITE_URL}/propiedad/${canonicalSlug}`;
-  const ogTitle = `${title} | ${priceStr} — Legado Inmobiliaria`;
-  const ogDesc = description || `Descubre esta propiedad exclusiva en ${location} con Legado Inmobiliaria`;
+  const headline = [type, location ? `en ${location}` : undefined].filter(Boolean).join(" ");
+  const facts = [
+    priceStr || undefined,
+    bedrooms > 0 ? `${bedrooms} dormitorios` : undefined,
+    bathrooms > 0 ? `${bathrooms} baños` : undefined,
+    area > 0 ? `${area} m²` : undefined,
+  ].filter(Boolean);
+  const teaser = typeof property.description === "string"
+    ? property.description.replace(/\s+/g, " ").trim().slice(0, 150)
+    : "";
+  const ogTitle = [title, priceStr, "Legado Inmobiliaria"].filter(Boolean).join(" | ");
+  const ogDesc = [
+    headline || "Propiedad exclusiva en Costa Blanca",
+    facts.length ? facts.join(" · ") : undefined,
+    teaser || "Una oportunidad singular para compradores que valoran ubicación, imagen y patrimonio.",
+  ]
+    .filter(Boolean)
+    .join(" — ");
+  const imageAlt = [title, location, "Legado Inmobiliaria"].filter(Boolean).join(" | ");
 
   let html = indexHtml;
 
@@ -177,11 +290,15 @@ function injectOgIntoIndex(indexHtml: string, property: Record<string, unknown>,
   html = html.replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/g, `<meta property="og:description" content="${esc(ogDesc)}">`);
   html = html.replace(/<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/g, `<meta property="og:url" content="${esc(pageUrl)}">`);
   html = html.replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/g, `<meta property="og:image" content="${esc(image)}">`);
+  html = html.replace(/<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/?>/g, `<meta property="og:image:alt" content="${esc(imageAlt)}">`);
+  html = html.replace(/<meta\s+property="og:image:height"\s+content="[^"]*"\s*\/?>/g, `<meta property="og:image:height" content="630">`);
+  html = html.replace(/<meta\s+property="og:type"\s+content="[^"]*"\s*\/?>/g, `<meta property="og:type" content="product">`);
 
   // Replace Twitter tags
   html = html.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/g, `<meta name="twitter:title" content="${esc(ogTitle)}">`);
   html = html.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/g, `<meta name="twitter:description" content="${esc(ogDesc)}">`);
   html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/g, `<meta name="twitter:image" content="${esc(image)}">`);
+  html = html.replace(/<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/?>/g, `<meta name="twitter:image:alt" content="${esc(imageAlt)}">`);
 
   // Replace canonical
   html = html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${esc(pageUrl)}" />`);
@@ -218,9 +335,6 @@ Deno.serve(async (req) => {
       canonicalSlug = foundSlug ?? id;
     } else {
       propertyId = await lookupSlug(slug);
-      if (!propertyId) {
-        return Response.redirect(`${SITE_URL}/propiedades`, 302);
-      }
     }
 
     // Humans arriving via direct Edge Function URL (not proxied) → redirect to SPA
@@ -236,7 +350,24 @@ Deno.serve(async (req) => {
     }
 
     // Fetch property data (needed for both crawlers and proxied humans)
-    const property = await fetchProperty(propertyId);
+    let property = propertyId ? await fetchProperty(propertyId) : null;
+
+    if (!property && slug) {
+      property = await findPropertyBySlugBase(slug);
+      if (property) {
+        const propertyIdFromFallback = String(property.id ?? "");
+        if (propertyIdFromFallback) {
+          propertyId = propertyIdFromFallback;
+          canonicalSlug = (await lookupSlugById(propertyIdFromFallback))
+            ?? buildPropertySlug(
+              String(property.title ?? ""),
+              String(property.city ?? property.location ?? ""),
+              propertyIdFromFallback,
+            );
+        }
+      }
+    }
+
     if (!property) {
       return Response.redirect(`${SITE_URL}/propiedades`, 302);
     }

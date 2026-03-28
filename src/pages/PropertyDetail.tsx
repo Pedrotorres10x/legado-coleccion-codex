@@ -26,6 +26,7 @@ import {
   recordPropertyIntent,
 } from "@/lib/personalization";
 import { usePersonalization } from "@/hooks/usePersonalization";
+import { Language, useTranslation } from "@/contexts/LanguageContext";
 
 const formatPrice = (v: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
@@ -38,6 +39,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const PropertyDetail = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { language } = useTranslation();
 
   // Un solo hook que maneja: BD lookup → fallback CRM → propiedad completa
   const { data: property, isLoading } = usePropertyBySlug(slug);
@@ -57,6 +59,89 @@ const PropertyDetail = () => {
     1,
     !!property && hasSignal && !!personalizedFilters
   );
+
+  const ui: Record<Language, Record<string, string>> = {
+    es: {
+      notFoundTitle: "Esta propiedad ya no es la ficha correcta",
+      notFoundDesc: "Puede que se haya vendido, retirado o que este enlace ya no te lleve al mejor siguiente paso.",
+      whatNow: "Que hacemos ahora",
+      openMore: "Abrir mas fichas",
+      goHome: "Volver al inicio",
+      whatsappError: "Si crees que es un error, escribenos por",
+      noPhotos: "Sin fotos disponibles",
+      aboutTitle: "Sobre esta propiedad",
+      energy: "Certificado energetico",
+      virtualTour: "Ver tour virtual 360°",
+      gallery: "Galeria",
+      viewAll: "Ver todas",
+      priceLabel: "Precio de salida",
+      usefulNextStep: "Siguiente paso util",
+      doNotReset: "No vuelvas al ruido",
+      stayHere: "O quedarme en esta ficha y avanzar",
+      similarEyebrow: "Sigue comparando",
+      mobileCta: "Quiero valorar esta propiedad",
+    },
+    en: {
+      notFoundTitle: "This property is no longer the right page to open",
+      notFoundDesc: "It may have been sold, removed or simply no longer be the best next step from this link.",
+      whatNow: "What now",
+      openMore: "Open more listings",
+      goHome: "Back to homepage",
+      whatsappError: "If you think this is a mistake, message us on",
+      noPhotos: "No photos available",
+      aboutTitle: "About this property",
+      energy: "Energy certificate",
+      virtualTour: "Open 360° virtual tour",
+      gallery: "Gallery",
+      viewAll: "View all",
+      priceLabel: "Guide price",
+      usefulNextStep: "Useful next step",
+      doNotReset: "Do not go back to noise",
+      stayHere: "Or stay on this listing and move forward",
+      similarEyebrow: "Keep comparing",
+      mobileCta: "Assess this property",
+    },
+    fr: {
+      notFoundTitle: "Ce bien n'est plus la bonne fiche a ouvrir",
+      notFoundDesc: "Il a peut-etre ete vendu, retire ou ce lien n'est peut-etre plus le bon prochain pas.",
+      whatNow: "Et maintenant",
+      openMore: "Ouvrir plus de fiches",
+      goHome: "Retour a l'accueil",
+      whatsappError: "Si vous pensez qu'il s'agit d'une erreur, ecrivez-nous sur",
+      noPhotos: "Aucune photo disponible",
+      aboutTitle: "A propos de ce bien",
+      energy: "Diagnostic energetique",
+      virtualTour: "Ouvrir la visite virtuelle 360°",
+      gallery: "Galerie",
+      viewAll: "Voir tout",
+      priceLabel: "Prix indicatif",
+      usefulNextStep: "Prochain pas utile",
+      doNotReset: "Ne revenez pas au bruit",
+      stayHere: "Ou rester sur cette fiche et avancer",
+      similarEyebrow: "Poursuivre la comparaison",
+      mobileCta: "Evaluer ce bien",
+    },
+    de: {
+      notFoundTitle: "Diese Immobilie ist nicht mehr die richtige Seite fuer den naechsten Schritt",
+      notFoundDesc: "Sie wurde vielleicht verkauft, entfernt oder dieser Link ist schlicht nicht mehr der beste naechste Schritt.",
+      whatNow: "Wie geht es weiter",
+      openMore: "Mehr Exposes oeffnen",
+      goHome: "Zur Startseite",
+      whatsappError: "Wenn Sie denken, dass das ein Fehler ist, schreiben Sie uns auf",
+      noPhotos: "Keine Fotos verfuegbar",
+      aboutTitle: "Zu dieser Immobilie",
+      energy: "Energieausweis",
+      virtualTour: "360°-Rundgang oeffnen",
+      gallery: "Galerie",
+      viewAll: "Alle ansehen",
+      priceLabel: "Orientierungspreis",
+      usefulNextStep: "Sinnvoller naechster Schritt",
+      doNotReset: "Nicht zurueck ins Rauschen",
+      stayHere: "Oder auf diesem Expose bleiben und weitergehen",
+      similarEyebrow: "Weiter vergleichen",
+      mobileCta: "Diese Immobilie einordnen",
+    },
+  }[language];
 
   const [currentImage, setCurrentImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -172,7 +257,7 @@ const PropertyDetail = () => {
           <div className="text-center max-w-lg w-full enter-fade-up">
             {/* 404 decorative */}
             <div className="relative mb-8 flex items-center justify-center">
-              <span className="font-serif text-[9rem] leading-none font-bold text-primary/10 select-none">
+              <span className="font-serif text-[6rem] sm:text-[9rem] leading-none font-bold text-primary/10 select-none">
                 404
               </span>
               <div className="absolute flex items-center justify-center">
@@ -183,15 +268,15 @@ const PropertyDetail = () => {
             </div>
 
             <h1 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-3">
-              Propiedad no encontrada
+              {ui.notFoundTitle}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base mb-8 leading-relaxed">
-              Es posible que esta propiedad haya sido vendida, retirada del mercado o que el enlace no sea válido.
+              {ui.notFoundDesc}
             </p>
 
             <div className="flex items-center gap-4 mb-8">
               <div className="flex-1 h-px bg-border/50" />
-              <span className="text-muted-foreground text-xs tracking-widest uppercase">¿Qué deseas hacer?</span>
+              <span className="text-muted-foreground text-xs tracking-widest uppercase">{ui.whatNow}</span>
               <div className="flex-1 h-px bg-border/50" />
             </div>
 
@@ -202,7 +287,7 @@ const PropertyDetail = () => {
                   className="w-full sm:w-auto bg-gradient-gold text-primary-foreground font-semibold px-8 hover:opacity-90 shadow-md shadow-primary/20"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Abrir más fichas de propiedades
+                  {ui.openMore}
                 </Button>
               </Link>
               <Link to="/">
@@ -211,13 +296,13 @@ const PropertyDetail = () => {
                   variant="outline"
                   className="w-full sm:w-auto border-border/60 hover:border-primary/40 font-semibold px-8"
                 >
-                  Ir al inicio
+                  {ui.goHome}
                 </Button>
               </Link>
             </div>
 
             <p className="text-muted-foreground/60 text-xs mt-8">
-              Si crees que esto es un error, escríbenos por{" "}
+              {ui.whatsappError}{" "}
               <a
                 href="https://wa.me/34600000000"
                 target="_blank"
@@ -343,8 +428,21 @@ const PropertyDetail = () => {
     { name: property.title, url: propertyPageUrl },
   ]);
 
-  const seoTitle = `${property.title} en ${property.location} | ${formatPrice(property.price)} — Legado Inmobiliaria`;
-  const seoDesc = `${TYPE_LABELS[property.property_type] || property.property_type} en ${property.location}: ${property.bedrooms} hab, ${property.bathrooms} baños, ${property.area_m2 || ""} m². ${property.description?.slice(0, 100) || ""}`;
+  const areaValue = property.area_m2 || property.surface_area;
+  const locationLabel = [property.location, property.province].filter(Boolean).join(", ");
+  const seoTitle = `${property.title} | ${formatPrice(property.price)} | Legado Inmobiliaria`;
+  const seoDesc = [
+    TYPE_LABELS[property.property_type] || property.property_type,
+    locationLabel ? `en ${locationLabel}` : undefined,
+    property.bedrooms ? `${property.bedrooms} dormitorios` : undefined,
+    property.bathrooms ? `${property.bathrooms} baños` : undefined,
+    areaValue ? `${areaValue} m²` : undefined,
+    property.description
+      ? property.description.replace(/\s+/g, " ").trim().slice(0, 120)
+      : "Una selección singular para compradores que buscan ubicación, imagen y valor patrimonial en la Costa Blanca.",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const handleCopyLink = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -408,7 +506,7 @@ const PropertyDetail = () => {
       <Navbar />
 
       {/* ═══════════════ HERO CINEMATIC ═══════════════ */}
-      <section className="relative h-[60vh] md:h-[85vh] overflow-hidden watermark-full" data-protected>
+      <section className="relative h-[68vh] sm:h-[72vh] md:h-[85vh] overflow-hidden watermark-full" data-protected>
         {hasImages ? (
             <div
               key={currentImage}
@@ -421,7 +519,7 @@ const PropertyDetail = () => {
         ) : (
           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-muted to-muted/60 flex flex-col items-center justify-center gap-4">
             <Camera className="w-16 h-16 text-muted-foreground/40" />
-            <p className="text-muted-foreground/60 text-sm font-medium tracking-wide uppercase">Sin fotos disponibles</p>
+            <p className="text-muted-foreground/60 text-sm font-medium tracking-wide uppercase">{ui.noPhotos}</p>
           </div>
         )}
 
@@ -459,7 +557,7 @@ const PropertyDetail = () => {
         )}
 
         {/* Back link + share buttons */}
-        <div className="absolute top-20 md:top-24 left-4 md:left-6 flex items-center gap-2 z-10">
+        <div className="absolute top-20 md:top-24 left-4 right-4 md:left-6 md:right-6 flex flex-wrap items-center gap-2 z-10">
           <Link
             to="/propiedades"
             className="bg-white/95 backdrop-blur-sm shadow-md rounded-full px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-1.5 md:gap-2 text-foreground text-xs md:text-sm hover:bg-white transition-all border border-border/50"
@@ -519,7 +617,7 @@ const PropertyDetail = () => {
         {/* Hero content overlay */}
         <div className="absolute bottom-0 left-0 right-0 pb-6 md:pb-16 px-4 md:px-12 lg:px-20 z-10">
           <div className="max-w-7xl mx-auto">
-            <div className="enter-fade-up" style={{ animationDelay: "300ms" }}>
+            <div className="enter-fade-up max-w-4xl" style={{ animationDelay: "300ms" }}>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3 md:mb-4">
                 <span className="bg-gradient-gold text-primary-foreground text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase px-3 md:px-4 py-1.5 md:py-2 rounded-full">
                   {TYPE_LABELS[property.property_type] || property.property_type}
@@ -536,16 +634,16 @@ const PropertyDetail = () => {
                 )}
               </div>
 
-              <h1 className="font-serif text-2xl md:text-5xl lg:text-6xl font-bold text-white mb-2 md:mb-3 leading-tight" style={{textShadow: "0 2px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)"}}>
+              <h1 className="font-serif text-[1.85rem] sm:text-[2.3rem] md:text-5xl lg:text-6xl font-bold text-white mb-2 md:mb-3 leading-tight break-words" style={{textShadow: "0 2px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)"}}>
                 {property.title}
               </h1>
 
-              <div className="flex items-center gap-2 text-white/95 mb-1 md:mb-0" style={{textShadow: "0 1px 6px rgba(0,0,0,0.6)"}}>
+              <div className="flex items-start sm:items-center gap-2 text-white/95 mb-1 md:mb-0" style={{textShadow: "0 1px 6px rgba(0,0,0,0.6)"}}>
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 text-primary drop-shadow-md" />
-                <span className="text-sm md:text-lg">{property.location}{property.province ? `, ${property.province}` : ""}</span>
+                <span className="text-sm md:text-lg break-words">{property.location}{property.province ? `, ${property.province}` : ""}</span>
               </div>
 
-              <span className="font-serif text-2xl md:text-4xl font-bold text-gradient-gold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+              <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-gold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
                 {formatPrice(property.price)}
               </span>
             </div>
@@ -574,7 +672,7 @@ const PropertyDetail = () => {
       <section className="relative z-20 -mt-6">
         <div className="max-w-5xl mx-auto px-4">
           <div className="card-med rounded-2xl p-4 md:p-8 enter-fade-up" style={{ animationDelay: "500ms" }}>
-            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 md:gap-6">
               {features.map((f, i) => (
                 <div key={f.label} className="text-center enter-fade-up" style={{ animationDelay: `${600 + i * 50}ms` }}>
                   <f.icon className="w-5 h-5 md:w-6 md:h-6 text-primary mx-auto mb-1.5 md:mb-2" />
@@ -615,7 +713,7 @@ const PropertyDetail = () => {
               {property.description && (
                 <div className="reveal-up">
                   <h2 className="font-serif text-2xl md:text-3xl font-bold mb-6">
-                    Sobre esta <span className="text-gradient-gold">propiedad</span>
+                    {ui.aboutTitle}
                   </h2>
                   <div className="luxury-divider mb-8" />
                   <div className="prose-luxury space-y-6">
@@ -658,7 +756,7 @@ const PropertyDetail = () => {
                 <div className="flex items-center gap-3 glass-premium rounded-xl px-5 py-4 reveal-up">
                   <Zap className="w-5 h-5 text-primary" />
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Certificado energético</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">{ui.energy}</p>
                     <p className="text-foreground font-medium">{energyCert}</p>
                   </div>
                 </div>
@@ -671,9 +769,9 @@ const PropertyDetail = () => {
                     href={property.virtual_tour_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 bg-gradient-gold text-primary-foreground px-6 py-4 rounded-xl font-semibold hover:opacity-90 transition-opacity text-lg shimmer-gold"
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-3 bg-gradient-gold text-primary-foreground px-6 py-4 rounded-xl font-semibold hover:opacity-90 transition-opacity text-base sm:text-lg shimmer-gold"
                   >
-                    <ExternalLink className="w-5 h-5" /> Ver tour virtual 360°
+                    <ExternalLink className="w-5 h-5" /> {ui.virtualTour}
                   </a>
                 </div>
               )}
@@ -682,7 +780,7 @@ const PropertyDetail = () => {
               {images.length > 3 && (
                 <div className="reveal-up">
                   <h2 className="font-serif text-2xl md:text-3xl font-bold mb-6">
-                    Galería <span className="text-gradient-gold">({images.length} fotos)</span>
+                    {ui.gallery} <span className="text-gradient-gold">({images.length} fotos)</span>
                   </h2>
                   <div className="luxury-divider mb-6" />
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -711,7 +809,7 @@ const PropertyDetail = () => {
                       >
                         <Camera className="w-8 h-8 text-primary" />
                         <span className="text-foreground font-serif text-lg font-bold">+{images.length - 9}</span>
-                        <span className="text-muted-foreground text-xs">Ver todas</span>
+                        <span className="text-muted-foreground text-xs">{ui.viewAll}</span>
                       </button>
                     )}
                   </div>
@@ -724,14 +822,14 @@ const PropertyDetail = () => {
               <div className="lg:sticky lg:top-24 space-y-6" id="lead-form-section">
 
                 {/* Price card */}
-                <div className="glass-premium rounded-2xl p-8 text-center border-glow-gold enter-fade-up" style={{ animationDelay: "400ms" }}>
-                  <p className="text-xs text-muted-foreground uppercase tracking-[0.2em] mb-3">Precio exclusivo</p>
-                  <p className="font-serif text-4xl md:text-5xl font-bold text-gradient-gold mb-4">
+                <div className="glass-premium rounded-2xl p-5 sm:p-8 text-center border-glow-gold enter-fade-up" style={{ animationDelay: "400ms" }}>
+                  <p className="text-xs text-muted-foreground uppercase tracking-[0.2em] mb-3">{ui.priceLabel}</p>
+                  <p className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-gold mb-4 break-words">
                     {formatPrice(property.price)}
                   </p>
                   <div className="luxury-divider mb-4" />
-                  <div className="flex justify-center gap-4 text-xs text-muted-foreground">
-                    {property.province && <span>{property.city}, {property.province}</span>}
+                  <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                    {property.province && <span className="break-words">{property.city}, {property.province}</span>}
                     <span>Ref: {property.reference || property.id.slice(0, 8).toUpperCase()}</span>
                   </div>
                 </div>
@@ -768,10 +866,10 @@ const PropertyDetail = () => {
                 {hasSignal && topArea ? (
                   <div className="glass-premium rounded-2xl p-5 border border-border/40 enter-fade-up" style={{ animationDelay: "620ms" }}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-                      Siguiente paso útil
+                      {ui.usefulNextStep}
                     </p>
                     <h4 className="mt-2 font-serif text-lg font-semibold text-foreground">
-                      No vuelvas a una interfaz genérica
+                      {ui.doNotReset}
                     </h4>
                     <p className="mt-3 text-sm leading-7 text-muted-foreground">
                       Si todavía quieres comparar antes de enviar el formulario, sigue por {topArea.label} y abre más fichas alineadas con esta búsqueda.
@@ -787,16 +885,16 @@ const PropertyDetail = () => {
                         onClick={scrollToForm}
                         className="text-sm font-medium text-primary underline-offset-4 transition hover:underline"
                       >
-                        O quedarme en esta ficha y enviar interés
+                        {ui.stayHere}
                       </button>
                     </div>
                   </div>
                 ) : null}
 
                 {/* Trust signals */}
-                <div className="grid grid-cols-3 gap-3 enter-fade-up" style={{ animationDelay: "700ms" }}>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 enter-fade-up" style={{ animationDelay: "700ms" }}>
                   {trustSignals.map(({ icon: Icon, label }) => (
-                    <div key={label} className="glass-premium rounded-xl p-3 text-center">
+                    <div key={label} className="glass-premium rounded-xl p-2.5 sm:p-3 text-center">
                       <Icon className="w-5 h-5 text-primary mx-auto mb-1.5" />
                       <p className="text-[10px] text-muted-foreground whitespace-pre-line leading-tight">{label}</p>
                     </div>
@@ -814,7 +912,7 @@ const PropertyDetail = () => {
           <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="text-center mb-12 reveal-up">
               <p className="text-primary font-medium tracking-[0.2em] uppercase text-sm mb-3">
-                Descubre más
+                {ui.similarEyebrow}
               </p>
               <h2 className="font-serif text-3xl md:text-4xl font-bold">{alternativeTitle}</h2>
               <p className="mt-4 mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
@@ -835,10 +933,10 @@ const PropertyDetail = () => {
           <div className="fixed bottom-4 left-4 right-4 z-50 lg:hidden enter-fade-up">
             <button
               onClick={scrollToForm}
-              className="w-full bg-gradient-gold text-primary-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-3 text-lg shadow-2xl shimmer-gold pulse-ring"
+              className="w-full bg-gradient-gold text-primary-foreground font-bold py-3.5 rounded-2xl flex items-center justify-center gap-3 text-base sm:text-lg shadow-2xl shimmer-gold pulse-ring"
             >
               <Send className="w-5 h-5" />
-              Me interesa esta vivienda
+              {ui.mobileCta}
             </button>
           </div>
         )}
@@ -851,16 +949,16 @@ const PropertyDetail = () => {
           >
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-6 right-6 w-12 h-12 rounded-full glass-dark flex items-center justify-center text-white hover:bg-white/20 z-10"
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 rounded-full glass-dark flex items-center justify-center text-white hover:bg-white/20 z-10"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             <button
               onClick={(e) => { e.stopPropagation(); prevImage(); }}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full glass-dark flex items-center justify-center text-white hover:bg-white/20 z-10"
+              className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 rounded-full glass-dark flex items-center justify-center text-white hover:bg-white/20 z-10"
             >
-              <ChevronLeft className="w-8 h-8" />
+              <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
             </button>
 
             <div className="relative watermark-full" onClick={(e) => e.stopPropagation()}>
@@ -879,17 +977,17 @@ const PropertyDetail = () => {
 
             <button
               onClick={(e) => { e.stopPropagation(); nextImage(); }}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full glass-dark flex items-center justify-center text-white hover:bg-white/20 z-10"
+              className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 rounded-full glass-dark flex items-center justify-center text-white hover:bg-white/20 z-10"
             >
-              <ChevronRight className="w-8 h-8" />
+              <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
             </button>
 
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-sm font-medium">
+            <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-xs sm:text-sm font-medium">
               {currentImage + 1} / {images.length}
             </div>
 
             {/* Lightbox thumbnails */}
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 max-w-[80vw] overflow-x-auto scrollbar-hide px-2">
+            <div className="absolute bottom-10 sm:bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 max-w-[86vw] sm:max-w-[80vw] overflow-x-auto scrollbar-hide px-2">
               {images.map((img, i) => (
                 <button
                   key={i}

@@ -4,7 +4,7 @@ import { useTranslation } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
-import teamPedro from "@/assets/team-pedro.jpg";
+import teamPedro from "@/assets/team-pedro.webp";
 
 
 const PILLARS = [

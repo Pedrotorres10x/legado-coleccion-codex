@@ -33,16 +33,15 @@ export function propertyUrl(property: { id: string; title: string; city?: string
 
 /**
  * URL para compartir en redes sociales con OG tags dinámicos.
- * Apunta directamente a la edge function que devuelve HTML con metadatos
- * y redirige humanos a la ficha mediante meta-refresh.
+ * Usa una ruta de marca propia que el hosting reescribe a la Edge Function,
+ * para que el enlace compartido conserve el dominio premium del sitio.
  */
 export function propertyShareUrl(property: { id: string; title: string; city?: string; location?: string }): string {
   const city = property.city || property.location || "";
   const base = buildPropertySlug(property.title, city);
   const suffix = property.id.replace(/-/g, "").slice(-5);
   const slug = `${base}-${suffix}`;
-  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/+$/, "");
-  return `${supabaseUrl}/functions/v1/property-og?slug=${slug}`;
+  return `${import.meta.env.VITE_SITE_URL || window.location.origin}/share/${slug}`.replace(/([^:]\/)\/+/g, "$1");
 }
 
 /**

@@ -46,21 +46,21 @@ const Blog = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-32 pb-20 relative overflow-hidden">
+      <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
         <div className="container relative">
-          <div className="text-center mb-16 enter-fade-up">
-            <div className="inline-flex items-center gap-2 mb-6">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-primary font-medium tracking-[0.3em] uppercase text-xs">
+          <div className="text-center mb-12 sm:mb-16 enter-fade-up">
+            <div className="inline-flex max-w-full items-center gap-2 mb-6">
+              <div className="hidden sm:block h-px w-12 bg-gradient-to-r from-transparent to-primary" />
+              <span className="text-primary font-medium tracking-[0.18em] sm:tracking-[0.3em] uppercase text-[10px] sm:text-xs">
                 {t("blog.tag")}
               </span>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary" />
+              <div className="hidden sm:block h-px w-12 bg-gradient-to-l from-transparent to-primary" />
             </div>
-            <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6 leading-[1.1]">
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-[1.1] break-words">
               Buyer <span className="text-gradient-gold italic">Guidance</span>
             </h1>
-            <p className="text-muted-foreground max-w-xl mx-auto text-lg leading-relaxed">
+            <p className="text-muted-foreground max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
               {t("blog.desc")}
             </p>
             <p className="mt-4 text-muted-foreground/90 max-w-2xl mx-auto text-sm leading-7">
@@ -69,10 +69,10 @@ const Blog = () => {
           </div>
 
           {/* Category filters */}
-          <div className="flex flex-wrap gap-3 justify-center mb-16 enter-fade-in" style={{ animationDelay: "300ms" }}>
+          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-12 sm:mb-16 enter-fade-in" style={{ animationDelay: "300ms" }}>
             <Link to="/blog">
               <button
-                className={`text-xs font-semibold tracking-[0.15em] uppercase px-5 py-2.5 rounded-full transition-all duration-300 ${
+                className={`text-[11px] sm:text-xs font-semibold tracking-[0.12em] sm:tracking-[0.15em] uppercase px-4 sm:px-5 py-2.5 rounded-full transition-all duration-300 ${
                   !categorySlug
                     ? "bg-gradient-gold text-primary-foreground shadow-lg shadow-primary/20"
                     : "text-muted-foreground hover:text-foreground border border-border/50 hover:border-primary/30"
@@ -84,7 +84,7 @@ const Blog = () => {
             {categories?.map((cat) => (
               <Link key={cat.id} to={`/blog?categoria=${cat.slug}`}>
                 <button
-                  className={`text-xs font-semibold tracking-[0.15em] uppercase px-5 py-2.5 rounded-full transition-all duration-300 ${
+                  className={`text-[11px] sm:text-xs font-semibold tracking-[0.12em] sm:tracking-[0.15em] uppercase px-4 sm:px-5 py-2.5 rounded-full transition-all duration-300 ${
                     categorySlug === cat.slug
                       ? "bg-gradient-gold text-primary-foreground shadow-lg shadow-primary/20"
                       : "text-muted-foreground hover:text-foreground border border-border/50 hover:border-primary/30"
@@ -120,18 +120,18 @@ const Blog = () => {
                             <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 30% 50%, hsl(var(--primary)) 0%, transparent 60%), radial-gradient(circle at 80% 20%, hsl(var(--primary)/0.5) 0%, transparent 50%)"}} />
                             <BookOpen className="w-16 h-16 text-primary/30 relative z-10" />
                             {featured.category && (
-                              <span className="text-primary/50 text-xs font-bold tracking-[0.3em] uppercase relative z-10">{featured.category.name}</span>
+                              <span className="text-primary/50 text-[10px] sm:text-xs font-bold tracking-[0.18em] sm:tracking-[0.3em] uppercase relative z-10 text-center px-4">{featured.category.name}</span>
                             )}
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent lg:bg-none" />
                       </div>
-                      <div className="bg-card/80 backdrop-blur-sm p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-                        <div className="flex items-center gap-3 mb-6">
+                      <div className="bg-card/80 backdrop-blur-sm p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
                           {featured.category && (
                             <span className="text-primary text-xs font-bold tracking-[0.2em] uppercase">{featured.category.name}</span>
                           )}
-                          <span className="text-border">—</span>
+                          <span className="hidden sm:inline text-border">—</span>
                           <span className="text-muted-foreground text-xs tracking-wider">
                             {featured.published_at ? formatDate(featured.published_at) : formatDate(featured.created_at)}
                           </span>
@@ -156,7 +156,7 @@ const Blog = () => {
 
               {/* Article grid */}
               {rest && rest.length > 0 && (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 lg:gap-x-8 gap-y-10 sm:gap-y-14">
                   {rest.map((post, i) => (
                     <article key={post.id} className="reveal-up" style={{ animationDelay: `${i * 60}ms` }}>
                       <Link to={`/blog/${post.slug}`} className="group block">
@@ -174,7 +174,7 @@ const Blog = () => {
                           )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         </div>
-                        <div className="flex items-center gap-3 mb-3">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
                           {post.category && (
                             <span className="text-primary text-[11px] font-bold tracking-[0.2em] uppercase">{post.category.name}</span>
                           )}
@@ -223,8 +223,8 @@ const Blog = () => {
           <p className="text-muted-foreground mb-10 max-w-md mx-auto leading-relaxed">
             {t("blog.ctaDesc")} El siguiente paso útil es abrir viviendas concretas y revisar sus fichas completas.
           </p>
-          <Link to="/propiedades">
-            <Button size="lg" className="bg-gradient-gold text-primary-foreground font-semibold px-10 tracking-wide">
+          <Link to="/propiedades" className="inline-block w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto bg-gradient-gold text-primary-foreground font-semibold px-6 sm:px-10 tracking-wide">
               Abrir fichas de propiedades
             </Button>
           </Link>

@@ -18,6 +18,7 @@ import PersonalizedNextStep from "@/components/PersonalizedNextStep";
 import { SITE_URL } from "@/lib/site";
 import { recordSearchIntent, sortPropertiesByIntent } from "@/lib/personalization";
 import { usePersonalization } from "@/hooks/usePersonalization";
+import { Language, useTranslation } from "@/contexts/LanguageContext";
 
 // Map hero budget param → [minPrice, maxPrice]
 const BUDGET_MAP: Record<string, { minPrice?: number; maxPrice?: number }> = {
@@ -97,6 +98,7 @@ const areaLabels: Record<string, string> = {
 };
 
 const Properties = () => {
+  const { language } = useTranslation();
   const [searchParams] = useSearchParams();
   const initialFilters = filtersFromParams(searchParams);
   const isMobile = useIsMobile();
@@ -109,15 +111,101 @@ const Properties = () => {
   const { data, isLoading, isError, refetch } = useExternalProperties(filters, sort, page);
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
   const normalizedCity = (filters.city || "").toLowerCase();
+  const ui: Record<Language, {
+    seoTitle: string;
+    seoDescription: string;
+    heroTitleStart: string;
+    heroTitleAccent: string;
+    heroTitleEnd: string;
+    heroSub: string;
+    personalizedDefault: string;
+    resultsLate: string;
+    resultsDefault: string;
+    errorTitle: string;
+    errorDesc: string;
+    retry: string;
+    whatsapp: string;
+    noResults: string;
+    clearFilters: string;
+  }> = {
+    es: {
+      seoTitle: "Propiedades en Venta en Benidorm y Costa Blanca | Legado Inmobiliaria",
+      seoDescription: "Explora mas de 900 propiedades exclusivas en venta: pisos, villas, chalets y aticos en Benidorm, Alicante y la Costa Blanca. Filtra por precio, tipo y ubicacion.",
+      heroTitleStart: "Tu nueva vida en la",
+      heroTitleAccent: "Costa Blanca",
+      heroTitleEnd: "empieza aqui",
+      heroSub: "+900 propiedades verificadas · Atencion personalizada · Sin compromiso",
+      personalizedDefault: "Usa los filtros para encontrar mejores opciones, pero no te quedes en la rejilla: entra en las fichas completas, revisa bien cada vivienda y envia el formulario solo cuando haya encaje real.",
+      resultsLate: "Hemos priorizado primero las viviendas que mejor encajan con tus senales actuales. Abre fichas, compara bien y usa el formulario solo en las que realmente merezcan un siguiente paso.",
+      resultsDefault: "Abre las fichas completas para ver fotos reales, detalles y el formulario antes de decidir que viviendas merecen entrar en tu shortlist.",
+      errorTitle: "No pudimos cargar las propiedades",
+      errorDesc: "Estamos teniendo problemas para conectar con nuestro sistema. Intentalo de nuevo en unos segundos.",
+      retry: "Reintentar",
+      whatsapp: "Contactar por WhatsApp",
+      noResults: "No se encontraron propiedades con estos filtros.",
+      clearFilters: "Limpiar filtros",
+    },
+    en: {
+      seoTitle: "Property for Sale in Benidorm and the Costa Blanca | Legado Inmobiliaria",
+      seoDescription: "Explore more than 900 exclusive homes for sale across Benidorm, Alicante and the Costa Blanca. Filter by price, property type and location.",
+      heroTitleStart: "Your new life on the",
+      heroTitleAccent: "Costa Blanca",
+      heroTitleEnd: "starts here",
+      heroSub: "900+ verified homes · Personal guidance · No pressure",
+      personalizedDefault: "Use the filters to refine the shortlist, but do not stay at grid level: open the full listings, review each home properly and enquire only when there is a genuine fit.",
+      resultsLate: "We have prioritised the homes that best match your current signals first. Open listings, compare carefully and enquire only on the ones that truly deserve a next step.",
+      resultsDefault: "Open the full property pages to review real photos, details and the enquiry form before deciding which homes deserve a place on your shortlist.",
+      errorTitle: "We could not load the properties",
+      errorDesc: "We are having trouble connecting to the live feed right now. Please try again in a few seconds.",
+      retry: "Try again",
+      whatsapp: "Contact via WhatsApp",
+      noResults: "No properties matched these filters.",
+      clearFilters: "Clear filters",
+    },
+    fr: {
+      seoTitle: "Biens a vendre a Benidorm et sur la Costa Blanca | Legado Inmobiliaria",
+      seoDescription: "Explorez plus de 900 biens exclusifs a vendre a Benidorm, Alicante et sur la Costa Blanca. Filtrez par prix, type de bien et localisation.",
+      heroTitleStart: "Votre nouvelle vie sur la",
+      heroTitleAccent: "Costa Blanca",
+      heroTitleEnd: "commence ici",
+      heroSub: "Plus de 900 biens verifies · Accompagnement personnalise · Sans engagement",
+      personalizedDefault: "Utilisez les filtres pour affiner votre selection, mais ne restez pas sur la grille: ouvrez les fiches completes, comparez vraiment chaque bien et contactez-nous seulement lorsqu'il y a un vrai fit.",
+      resultsLate: "Nous avons d'abord mis en avant les biens qui correspondent le mieux a vos signaux actuels. Ouvrez les fiches, comparez avec soin et ne passez a l'etape suivante que pour les biens qui le meritent vraiment.",
+      resultsDefault: "Ouvrez les fiches completes pour voir les vraies photos, les details et le formulaire avant de decider quels biens meritent une place dans votre selection.",
+      errorTitle: "Impossible de charger les biens",
+      errorDesc: "Nous rencontrons actuellement un probleme de connexion avec notre flux. Reessayez dans quelques secondes.",
+      retry: "Reessayer",
+      whatsapp: "Contacter par WhatsApp",
+      noResults: "Aucun bien ne correspond a ces filtres.",
+      clearFilters: "Effacer les filtres",
+    },
+    de: {
+      seoTitle: "Immobilien zum Verkauf in Benidorm und an der Costa Blanca | Legado Inmobiliaria",
+      seoDescription: "Entdecken Sie mehr als 900 exklusive Immobilien in Benidorm, Alicante und an der Costa Blanca. Filtern Sie nach Preis, Immobilientyp und Lage.",
+      heroTitleStart: "Ihr neues Leben an der",
+      heroTitleAccent: "Costa Blanca",
+      heroTitleEnd: "beginnt hier",
+      heroSub: "900+ gepruefte Immobilien · Persoenliche Begleitung · Unverbindlich",
+      personalizedDefault: "Nutzen Sie die Filter, um die Auswahl einzugrenzen, bleiben Sie aber nicht nur im Raster: Oeffnen Sie die vollstaendigen Exposes, pruefen Sie jede Immobilie richtig und fragen Sie nur dort an, wo es wirklich passt.",
+      resultsLate: "Wir haben zuerst die Immobilien priorisiert, die am besten zu Ihren aktuellen Signalen passen. Oeffnen Sie Exposes, vergleichen Sie sorgfaeltig und gehen Sie nur bei wirklich passenden Objekten den naechsten Schritt.",
+      resultsDefault: "Oeffnen Sie die vollstaendigen Objektseiten, um echte Fotos, Details und das Anfrageformular zu sehen, bevor Sie entscheiden, welche Immobilien auf Ihre Shortlist gehoeren.",
+      errorTitle: "Die Immobilien konnten nicht geladen werden",
+      errorDesc: "Zurzeit gibt es ein Verbindungsproblem mit unserem System. Bitte versuchen Sie es in wenigen Sekunden erneut.",
+      retry: "Erneut versuchen",
+      whatsapp: "Per WhatsApp kontaktieren",
+      noResults: "Keine Immobilien entsprechen diesen Filtern.",
+      clearFilters: "Filter loeschen",
+    },
+  }[language];
   const topAreaSlug = profile.lastAreaSlug || Object.entries(profile.areaCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
   const topTopic = Object.entries(profile.topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
   const personalizedHeroLine = hasSignal
     ? `Ya tenemos señales útiles de esta búsqueda${topAreaSlug ? `, especialmente en ${areaLabels[topAreaSlug] || "tu zona prioritaria"}` : ""}${topTopic === "mortgage" ? " y con interés en hipoteca" : topTopic === "legal" ? " y con foco legal" : ""}. Usa el catálogo para volver antes a las fichas que más sentido tienen para ti.`
-    : "Usa los filtros para encontrar mejores opciones, pero no te quedes en la rejilla: entra en las fichas completas, revisa bien cada vivienda y envía el formulario solo cuando haya encaje real.";
+    : ui.personalizedDefault;
   const merchandisedProperties = data?.properties ? sortPropertiesByIntent(profile, data.properties) : [];
   const resultsIntro = hasSignal && intentStage === "late"
-    ? "Hemos priorizado primero las viviendas que mejor encajan con tus señales actuales. Abre fichas, compara bien y usa el formulario solo en las que realmente merezcan un siguiente paso."
-    : "Open the full property pages to see the real photos, details and enquiry form before deciding which homes are worth your shortlist.";
+    ? ui.resultsLate
+    : ui.resultsDefault;
   const showSouthClusterPromo =
     !filters.city ||
     [
@@ -159,34 +247,34 @@ const Properties = () => {
   return (
     <main className="min-h-screen bg-background">
       <SEOHead
-        title="Propiedades en Venta en Benidorm y Costa Blanca | Legado Inmobiliaria"
-        description="Explora más de 900 propiedades exclusivas en venta: pisos, villas, chalets y áticos en Benidorm, Alicante y la Costa Blanca. Filtra por precio, tipo y ubicación."
+        title={ui.seoTitle}
+        description={ui.seoDescription}
         canonical={`${SITE_URL}/propiedades`}
         jsonLd={[breadcrumb]}
       />
       <Navbar />
 
       {/* Hero header */}
-      <section className="pt-32 pb-12 relative">
+      <section className="pt-28 sm:pt-32 pb-10 sm:pb-12 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-card/80 to-background" />
         <div className="container relative z-10">
           {/* Emotional hero */}
-          <div className="text-center space-y-5 enter-fade-up">
-            <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Tu nueva vida en la{" "}
-              <span className="text-gradient-gold">Costa Blanca</span>{" "}
-              empieza aquí
+          <div className="text-center space-y-4 sm:space-y-5 enter-fade-up">
+            <h1 className="font-serif text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.08] sm:leading-tight">
+              {ui.heroTitleStart}{" "}
+              <span className="text-gradient-gold">{ui.heroTitleAccent}</span>{" "}
+              {ui.heroTitleEnd}
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
-              +900 propiedades verificadas · Atención personalizada · Sin compromiso
+            <p className="text-muted-foreground text-[15px] sm:text-base md:text-lg max-w-2xl mx-auto">
+              {ui.heroSub}
             </p>
-            <p className="text-muted-foreground/90 text-sm md:text-base max-w-3xl mx-auto leading-7">
+            <p className="text-muted-foreground/90 text-sm md:text-base max-w-3xl mx-auto leading-6 sm:leading-7">
               {personalizedHeroLine}
             </p>
           </div>
           {/* Unified trust bar */}
-          <div className="mt-8 mx-auto max-w-3xl rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm px-6 py-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs md:text-sm text-muted-foreground">
+          <div className="mt-6 sm:mt-8 mx-auto max-w-3xl rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm px-4 sm:px-6 py-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 sm:gap-x-8 gap-y-3 text-[11px] sm:text-xs md:text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-primary" /> +1.500 familias asesoradas</span>
               <span className="h-4 w-px bg-border hidden sm:inline-block" />
               <span className="flex items-center gap-1.5"><CalendarDays className="w-4 h-4 text-primary" /> +15 años de experiencia</span>
@@ -222,14 +310,14 @@ const Properties = () => {
               <div className="animate-gold-pulse rounded-full">
                 <AlertTriangle className="h-12 w-12 text-primary mb-4" />
               </div>
-              <h2 className="font-serif text-2xl font-bold mb-2">No pudimos cargar las propiedades</h2>
+              <h2 className="font-serif text-2xl font-bold mb-2">{ui.errorTitle}</h2>
               <p className="text-muted-foreground max-w-md mb-6">
-                Estamos teniendo problemas para conectar con nuestro sistema. Por favor, inténtalo de nuevo en unos segundos.
+                {ui.errorDesc}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button onClick={() => refetch()} className="bg-gradient-gold text-primary-foreground gap-2">
                   <RefreshCw className="w-4 h-4" />
-                  Reintentar
+                  {ui.retry}
                 </Button>
                 <Button variant="outline" asChild>
                   <a
@@ -239,7 +327,7 @@ const Properties = () => {
                     className="gap-2"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Contactar por WhatsApp
+                    {ui.whatsapp}
                   </a>
                 </Button>
               </div>
@@ -253,9 +341,9 @@ const Properties = () => {
             </div>
           ) : data?.properties.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-muted-foreground text-lg">No se encontraron propiedades con estos filtros.</p>
+              <p className="text-muted-foreground text-lg">{ui.noResults}</p>
               <Button variant="outline" className="mt-4" onClick={() => handleFiltersChange({})}>
-                Limpiar filtros
+                {ui.clearFilters}
               </Button>
             </div>
           ) : (
@@ -268,7 +356,7 @@ const Properties = () => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-12">
+                <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
                   <Button variant="outline" size="icon" disabled={page === 1} onClick={() => setPage(page - 1)} className="border-border">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -301,7 +389,7 @@ const Properties = () => {
       {showSouthClusterPromo ? (
         <section className="pb-16">
           <div className="container">
-            <div className="rounded-[32px] border border-primary/20 bg-[linear-gradient(180deg,rgba(255,248,235,0.95),rgba(255,255,255,0.92))] p-8 md:p-10">
+            <div className="rounded-[28px] sm:rounded-[32px] border border-primary/20 bg-[linear-gradient(180deg,rgba(255,248,235,0.95),rgba(255,255,255,0.92))] p-5 sm:p-8 md:p-10">
               <div className="max-w-3xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
                   Strong live routes

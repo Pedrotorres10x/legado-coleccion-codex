@@ -76,16 +76,16 @@ The image should feature: beautiful Mediterranean architecture, Costa Blanca Spa
 Style: editorial magazine quality, cinematic lighting, 16:9 aspect ratio. Ultra high resolution.
 Do NOT include any text or watermarks in the image.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
+        model: "gpt-4.1-mini",
+        input: prompt,
+        tools: [{ type: "image_generation" }],
       }),
     });
 
@@ -95,15 +95,13 @@ Do NOT include any text or watermarks in the image.`;
     }
 
     const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!imageUrl) {
+    const imageBase64 = data.output?.find((item: { type?: string }) => item.type === "image_generation_call")?.result;
+    if (!imageBase64) {
       console.error("No image in response");
       return null;
     }
 
-    // Extract base64 data
-    const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
-    const imageBytes = decode(base64Data);
+    const imageBytes = decode(imageBase64);
 
     // Upload to storage
     const fileName = `${slug}-${Date.now()}.png`;
@@ -165,8 +163,8 @@ serve(async (req) => {
       topic_index?: number;
     }));
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -242,21 +240,22 @@ Devuelve un objeto JSON con EXACTAMENTE estos campos:
   "category_id": "${category.id}"
 }`;
 
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [{ role: "user", content: prompt }],
-          tools: [{
-            type: "function",
-            function: {
+          model: "gpt-4.1-mini",
+          instructions: "You are an expert SEO real-estate copywriter. Return only valid JSON.",
+          input: prompt,
+          text: {
+            format: {
+              type: "json_schema",
               name: "create_blog_article",
-              description: "Create a blog article with all required fields",
-              parameters: {
+              strict: true,
+              schema: {
                 type: "object",
                 properties: {
                   title: { type: "string" },
@@ -271,8 +270,7 @@ Devuelve un objeto JSON con EXACTAMENTE estos campos:
                 additionalProperties: false,
               },
             },
-          }],
-          tool_choice: { type: "function", function: { name: "create_blog_article" } },
+          },
         }),
       });
 
@@ -288,13 +286,13 @@ Devuelve un objeto JSON con EXACTAMENTE estos campos:
       }
 
       const aiData = await response.json();
-      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-      if (!toolCall) {
-        console.error("No tool call in response");
+      const content = aiData.output_text;
+      if (!content) {
+        console.error("No JSON payload in response");
         continue;
       }
 
-      const article = JSON.parse(toolCall.function.arguments) as GeneratedArticle;
+      const article = JSON.parse(content) as GeneratedArticle;
 
       // Ensure slug is unique
       let slug = article.slug.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80);
@@ -304,7 +302,7 @@ Devuelve un objeto JSON con EXACTAMENTE estos campos:
 
       // Generate cover image
       console.log(`Generating cover image for: ${article.title}`);
-      const coverImageUrl = await generateCoverImage(article.title, LOVABLE_API_KEY, supabase, slug);
+      const coverImageUrl = await generateCoverImage(article.title, OPENAI_API_KEY, supabase, slug);
       console.log(`Cover image: ${coverImageUrl ? "OK" : "failed"}`);
 
       const { error: insertError } = await supabase.from("blog_posts").insert({

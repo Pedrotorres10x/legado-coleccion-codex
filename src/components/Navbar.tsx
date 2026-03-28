@@ -3,7 +3,7 @@ import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useTranslation } from "@/contexts/LanguageContext";
-import logo from "@/assets/logo_legado.png";
+import logo from "@/assets/logo_legado.webp";
 import { usePersonalization } from "@/hooks/usePersonalization";
 
 const personalizedRouteLabels: Record<string, { label: string; href: string }> = {
@@ -54,9 +54,17 @@ const Navbar = () => {
         scrolled || mobileOpen ? "glass-dark py-3" : "bg-transparent py-4 sm:py-6"
       }`}
     >
-      <div className="container flex items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center flex-shrink-0">
-          <img src={logo} alt="Legado Inmobiliaria" className="h-16 sm:h-20" />
+      <div className="container flex items-center justify-between gap-3 px-4 sm:px-6">
+        <Link to="/" className="flex min-w-0 items-center flex-shrink">
+          <img
+            src={logo}
+            alt="Legado Inmobiliaria"
+            width="320"
+            height="122"
+            decoding="async"
+            fetchPriority="high"
+            className="h-14 sm:h-20 w-auto"
+          />
         </Link>
 
         {/* Desktop nav */}
@@ -77,7 +85,7 @@ const Navbar = () => {
 
         {/* Mobile toggle */}
         <button
-          className={`md:hidden p-1 rounded-lg transition-colors hover:bg-white/10 ${scrolled ? "text-foreground hover:bg-black/5" : "text-white"}`}
+          className={`md:hidden shrink-0 p-1.5 rounded-lg transition-colors hover:bg-white/10 ${scrolled ? "text-foreground hover:bg-black/5" : "text-white"}`}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
         >
@@ -90,7 +98,7 @@ const Navbar = () => {
       {/* Mobile menu */}
       {mobileOpen && (
           <div
-            className="md:hidden mx-3 mt-2 rounded-2xl border border-border/30 bg-background/95 backdrop-blur-xl overflow-hidden enter-fade-up"
+            className="md:hidden mx-3 mt-2 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-border/30 bg-background/95 backdrop-blur-xl enter-fade-up"
           >
             <div className="flex flex-col py-2">
               {navLinks.map(({ to, label, native }, i) => (

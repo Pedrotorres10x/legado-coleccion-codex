@@ -135,7 +135,7 @@ Secrets detectados en el repo:
 - `INTERNAL_API_KEY`
 - `VAPID_PUBLIC_KEY`
 - `VAPID_PRIVATE_KEY`
-- `LOVABLE_API_KEY`
+- `OPENAI_API_KEY`
 
 No todos son obligatorios para arrancar. Prioridad real:
 
@@ -153,7 +153,7 @@ Según features:
 - `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY` para push
 - `INTERNAL_API_KEY` para jobs internos protegidos
 - `CRM_API_KEY` si vuestro CRM lo exige
-- `LOVABLE_API_KEY` solo si queréis mantener las funciones IA que lo usan
+- `OPENAI_API_KEY` para funciones IA (`translate`, `generate-blog-article`, `fill-blog-images`, `refresh-featured`, `similar-properties`)
 
 Ejemplo:
 

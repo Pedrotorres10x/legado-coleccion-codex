@@ -1,10 +1,10 @@
 import { Shield, BadgeCheck, Scale } from "lucide-react";
 
 import certCrs from "@/assets/cert-crs.jpg";
-import certMeta from "@/assets/cert-meta.png";
-import certApi from "@/assets/cert-api.png";
+import certMeta from "@/assets/cert-meta.webp";
+import certApi from "@/assets/cert-api.webp";
 import certAsicval from "@/assets/cert-asicval.png";
-import certRaicv from "@/assets/cert-raicv.jpg";
+import certRaicv from "@/assets/cert-raicv.webp";
 
 const credentials = [
   {

@@ -6,6 +6,7 @@ interface SEOHeadProps {
   description: string;
   canonical?: string;
   ogImage?: string;
+  ogImageAlt?: string;
   ogType?: string;
   noIndex?: boolean;
   jsonLd?: object | object[];
@@ -28,6 +29,7 @@ const SEOHead = ({
   description,
   canonical,
   ogImage = `${SITE_URL}/og-image.jpg`,
+  ogImageAlt,
   ogType = "website",
   noIndex = false,
   jsonLd,
@@ -74,6 +76,7 @@ const SEOHead = ({
     setMeta("property", "og:title", title);
     setMeta("property", "og:description", description);
     setMeta("property", "og:image", ogImage);
+    setMeta("property", "og:image:alt", ogImageAlt || title);
     setMeta("property", "og:image:width", "1200");
     setMeta("property", "og:image:height", "630");
     setMeta("property", "og:type", ogType);
@@ -108,6 +111,7 @@ const SEOHead = ({
     setMeta("name", "twitter:title", title);
     setMeta("name", "twitter:description", description);
     setMeta("name", "twitter:image", ogImage);
+    setMeta("name", "twitter:image:alt", ogImageAlt || title);
     if (canonical) setMeta("name", "twitter:url", canonical);
 
     // Canonical
@@ -163,7 +167,7 @@ const SEOHead = ({
       articleProps.forEach(prop => removeMeta("property", prop));
       removeMeta("name", "keywords");
     };
-  }, [title, description, canonical, ogImage, ogType, noIndex, jsonLd, articleAuthor, articlePublishedTime, articleModifiedTime, articleSection, articleTags, keywords]);
+  }, [title, description, canonical, ogImage, ogImageAlt, ogType, noIndex, jsonLd, articleAuthor, articlePublishedTime, articleModifiedTime, articleSection, articleTags, keywords]);
 
   return null;
 };

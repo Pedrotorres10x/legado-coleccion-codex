@@ -33,7 +33,14 @@ const DeferredSection = ({
   }, [isVisible, rootMargin]);
 
   return (
-    <div ref={anchorRef} style={{ minHeight: isVisible ? undefined : minHeight }}>
+    <div
+      ref={anchorRef}
+      style={{
+        minHeight: isVisible ? undefined : minHeight,
+        contentVisibility: isVisible ? "visible" : "auto",
+        containIntrinsicSize: `${minHeight}px`,
+      }}
+    >
       {isVisible ? children : null}
     </div>
   );

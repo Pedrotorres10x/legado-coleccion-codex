@@ -9,6 +9,14 @@ const corsHeaders = {
 const PIXEL_ID = "1255986579960911";
 const GRAPH_API = `https://graph.facebook.com/v21.0/${PIXEL_ID}/events`;
 
+function normalizeHost(value: string) {
+  return value
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+    .trim()
+    .toLowerCase();
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,7 +25,8 @@ serve(async (req) => {
   // ── Origin validation: only allow requests from our domains ──
   const origin = req.headers.get("origin") ?? "";
   const referer = req.headers.get("referer") ?? "";
-  const allowedDomains = ["legadocoleccion.es", "lovable.app", "lovable.dev"];
+  const siteHost = normalizeHost(Deno.env.get("SITE_URL") ?? "https://legadocoleccion.es");
+  const allowedDomains = [siteHost, "localhost", "127.0.0.1"];
   const isAllowed = allowedDomains.some(d => origin.includes(d) || referer.includes(d));
   if (!isAllowed) {
     return new Response(JSON.stringify({ error: "Forbidden" }), {

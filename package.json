@@ -9,6 +9,10 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "supabase": "npx supabase",
+    "supabase:login": "npx supabase login",
+    "supabase:link": "npx supabase link --project-ref vrywyqpxmmzikaedjoxt",
+    "supabase:deploy:ai": "npx supabase functions deploy translate && npx supabase functions deploy fill-blog-images && npx supabase functions deploy generate-blog-article && npx supabase functions deploy refresh-featured && npx supabase functions deploy similar-properties && npx supabase functions deploy meta-capi",
     "test": "vitest run",
     "test:watch": "vitest"
   },

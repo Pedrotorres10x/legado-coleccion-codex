@@ -34,16 +34,16 @@ async function generateAndUpload(
 
   console.log(`Generating image for: ${slug}`);
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash-image",
-      messages: [{ role: "user", content: prompt }],
-      modalities: ["image", "text"],
+      model: "gpt-4.1-mini",
+      input: prompt,
+      tools: [{ type: "image_generation" }],
     }),
   });
 
@@ -53,14 +53,13 @@ async function generateAndUpload(
   }
 
   const data = await response.json();
-  const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-  if (!imageUrl) {
+  const imageBase64 = data.output?.find((item: { type?: string }) => item.type === "image_generation_call")?.result;
+  if (!imageBase64) {
     console.error(`No image returned for ${slug}`);
     return null;
   }
 
-  const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
-  const imageBytes = decode(base64Data);
+  const imageBytes = decode(imageBase64);
 
   const fileName = `${slug}-${Date.now()}.png`;
   const { error: uploadError } = await supabase.storage
@@ -105,8 +104,8 @@ serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) throw new Error("LOVABLE_API_KEY not set");
+    const apiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!apiKey) throw new Error("OPENAI_API_KEY not set");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

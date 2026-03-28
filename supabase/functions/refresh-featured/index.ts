@@ -19,7 +19,7 @@ serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY") || "";
+  const openAiApiKey = Deno.env.get("OPENAI_API_KEY") || "";
   const supabase = createClient(supabaseUrl, serviceKey);
 
   try {
@@ -68,43 +68,56 @@ serve(async (req: Request) => {
     const international = properties.filter(isInternational);
     const national = properties.filter((p: Record<string, unknown>) => !isInternational(p));
 
-    // Analyze images with AI
-    const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
     async function scoreProperties(pool: Record<string, unknown>[], maxCount: number) {
       const scored: Array<{ property: Record<string, unknown>; score: number; analysis: string }> = [];
       for (const prop of pool.slice(0, maxCount)) {
         const imageUrl = (prop.images as string[])[0];
         try {
-          const aiRes = await fetch(AI_URL, {
+          const aiRes = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${lovableApiKey}`,
+              Authorization: `Bearer ${openAiApiKey}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: "google/gemini-2.5-flash-lite",
-              messages: [{
-                role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: `Rate this real estate photo 1-10 for a luxury featured listing. Be strict: only truly premium, sharp, well-composed photos score 7+. Respond ONLY with JSON: {"score": <number>, "reason": "<one sentence>"}`,
+              model: "gpt-4.1-mini",
+              instructions:
+                "You are a strict real-estate art director rating listing photography. Return only valid JSON.",
+              input: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "input_text",
+                      text: 'Rate this real estate photo from 1 to 10 for a luxury featured listing. Be strict: only truly premium, sharp, well-composed photos score 7 or above. Return JSON with exactly {"score": number, "reason": string}.',
+                    },
+                    { type: "input_image", image_url: imageUrl },
+                  ],
+                },
+              ],
+              text: {
+                format: {
+                  type: "json_schema",
+                  name: "featured_photo_score",
+                  strict: true,
+                  schema: {
+                    type: "object",
+                    properties: {
+                      score: { type: "number" },
+                      reason: { type: "string" },
+                    },
+                    required: ["score", "reason"],
+                    additionalProperties: false,
                   },
-                  { type: "image_url", image_url: { url: imageUrl } },
-                ],
-              }],
+                },
+              },
             }),
           });
 
           if (aiRes.ok) {
             const aiData = await aiRes.json();
-            const content = aiData.choices?.[0]?.message?.content || "";
-            const jsonMatch = content.match(/\{[^}]+\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              scored.push({ property: prop, score: Number(parsed.score) || 0, analysis: parsed.reason || "" });
-            }
+            const parsed = JSON.parse(aiData.output_text || "{}");
+            scored.push({ property: prop, score: Number(parsed.score) || 0, analysis: parsed.reason || "" });
           }
         } catch (e) {
           console.error(`AI failed for ${prop.id}:`, e);
@@ -117,7 +130,13 @@ serve(async (req: Request) => {
     // Strategy: prioritize international, fill remainder with national
     let top3: Array<{ property: Record<string, unknown>; score: number; analysis: string }> = [];
 
-    if (international.length >= 3) {
+    if (!openAiApiKey) {
+      top3 = properties.slice(0, 3).map((property) => ({
+        property,
+        score: 0,
+        analysis: "Selected without AI scoring.",
+      }));
+    } else if (international.length >= 3) {
       // Enough internationals — pick best 3 (rotate among them via AI scoring)
       const scoredIntl = await scoreProperties(international, 15);
       top3 = scoredIntl.slice(0, 3);

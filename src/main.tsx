@@ -5,6 +5,15 @@ import { initMetaPixel } from "./lib/metaPixel";
 import { persistUtmParams } from "./lib/utm";
 
 persistUtmParams();
-initMetaPixel();
+
+const scheduleNonCriticalInit = () => {
+  initMetaPixel();
+};
+
+if ("requestIdleCallback" in window) {
+  window.requestIdleCallback(scheduleNonCriticalInit, { timeout: 2000 });
+} else {
+  window.setTimeout(scheduleNonCriticalInit, 800);
+}
 
 createRoot(document.getElementById("root")!).render(<App />);

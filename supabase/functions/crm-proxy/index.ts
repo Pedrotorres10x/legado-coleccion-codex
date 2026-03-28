@@ -15,9 +15,12 @@ const CRM_WEB_LEADS_BASE = trimTrailingSlash(
   Deno.env.get("CRM_WEB_LEADS_BASE_URL") ?? CRM_BASE
 );
 
-// Public integration contract with the active CRM.
+// Keep admin-only routing explicit, but preserve compatibility for the current
+// public bundle until the frontend is redeployed everywhere.
 const ALLOWED_ENDPOINTS = new Set([
   "get-leads",
+  "public-lead",
+  "public-properties",
   "web-leads-admin",
 ]);
 

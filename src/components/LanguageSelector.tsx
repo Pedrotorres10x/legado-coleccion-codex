@@ -47,10 +47,16 @@ const FLAGS: Record<Language, () => JSX.Element> = {
 const LanguageSelector = () => {
   const { language, setLanguage, isTranslating } = useTranslation();
   const CurrentFlag = FLAGS[language];
+  const labels: Record<Language, string> = {
+    es: "Seleccionar idioma",
+    en: "Select language",
+    fr: "Choisir la langue",
+    de: "Sprache waehlen",
+  };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="pointer-events-none flex items-center gap-2 text-sm font-medium text-foreground/80 tracking-wide">
+    <div className="flex min-w-0 items-center gap-2">
+      <div className="pointer-events-none flex shrink-0 items-center gap-2 text-sm font-medium text-foreground/80 tracking-wide">
         {isTranslating ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
@@ -61,8 +67,8 @@ const LanguageSelector = () => {
       <NativeSelect
         value={language}
         onChange={(e) => setLanguage(e.target.value as Language)}
-        className="h-9 min-w-[140px] bg-transparent text-sm font-medium text-foreground/80 hover:text-primary"
-        aria-label="Seleccionar idioma"
+        className="h-9 min-w-0 w-[112px] sm:w-[140px] bg-transparent text-sm font-medium text-foreground/80 hover:text-primary"
+        aria-label={labels[language]}
       >
         {languages.map((lang) => {
           return (

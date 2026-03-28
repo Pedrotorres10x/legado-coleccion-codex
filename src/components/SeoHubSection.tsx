@@ -66,8 +66,8 @@ const topicPriority: Record<string, string> = {
 };
 
 const SeoHubSection = ({
-  title = "Use the right route, then open real properties",
-  description = "Start from the strongest property routes, use the guides only when they help you decide faster, and move into full property pages once the shortlist starts taking shape.",
+  title = "Start with the right route. Then open real properties.",
+  description = "The goal is not to read more or click more. It is to reach the right property pages faster, compare with better judgement and move when a home still makes sense.",
 }: SeoHubSectionProps) => {
   const { hasSignal, profile, suggestions, intentStage, intentScore } = usePersonalization();
   const topAreaSlug = profile.lastAreaSlug || Object.entries(profile.areaCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
@@ -75,12 +75,12 @@ const SeoHubSection = ({
   const personalizedTitle = hasSignal
     ? intentStage === "late"
       ? "This buyer already looks close to real shortlist mode"
-      : "Resume the routes that best match this buyer"
+      : "Resume the routes that actually fit this buyer"
     : title;
   const personalizedDescription = hasSignal
     ? intentStage === "late"
-      ? "There is enough intent here to stop treating the session like generic discovery. Use these routes to get back into strong fichas and concrete homes faster."
-      : "We can already see signals from the areas, guides and properties this visitor has explored. Use that context to continue with the most relevant next routes instead of resetting the search."
+      ? "There is enough intent here to stop treating the session like generic discovery. The right move now is to get back into strong property pages and decide what deserves a proper enquiry."
+      : "We can already see signals from the areas, guides and homes this visitor has explored. Use that context to continue with the most relevant next routes instead of resetting the search."
     : description;
   const primaryCards = hasSignal
     ? suggestions.map((item) => ({
@@ -103,10 +103,10 @@ const SeoHubSection = ({
   });
 
   return (
-    <section className="py-16 border-y border-border/35 bg-card/25">
+    <section className="py-12 sm:py-16 border-y border-border/35 bg-card/25">
       <div className="container">
-        <div className="max-w-3xl mb-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Property routes</p>
+        <div className="max-w-3xl mb-8 sm:mb-10">
+          <p className="text-[11px] sm:text-sm font-semibold uppercase tracking-[0.18em] sm:tracking-[0.24em] text-primary">Property routes</p>
           {hasSignal ? (
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
@@ -117,33 +117,33 @@ const SeoHubSection = ({
               </span>
             </div>
           ) : null}
-          <h2 className="mt-3 font-serif text-3xl md:text-4xl font-semibold">{personalizedTitle}</h2>
-          <p className="mt-4 text-base leading-7 text-muted-foreground">{personalizedDescription}</p>
+          <h2 className="mt-3 font-serif text-[1.95rem] sm:text-3xl md:text-4xl font-semibold leading-[1.08]">{personalizedTitle}</h2>
+          <p className="mt-4 text-sm sm:text-base leading-6 sm:leading-7 text-muted-foreground">{personalizedDescription}</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-primary/20 bg-[linear-gradient(180deg,rgba(255,248,235,0.95),rgba(255,255,255,0.92))] p-7 lg:col-span-2">
+          <div className="rounded-[24px] sm:rounded-[28px] border border-primary/20 bg-[linear-gradient(180deg,rgba(255,248,235,0.95),rgba(255,255,255,0.92))] p-5 sm:p-7 lg:col-span-2">
             <div className="flex items-center gap-3 mb-5">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <MapPinned className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-serif text-2xl font-semibold">
-                  {hasSignal ? "Most relevant next steps for this visitor" : "Best live-inventory routes right now"}
+                <h3 className="font-serif text-xl sm:text-2xl font-semibold leading-tight">
+                  {hasSignal ? "Most relevant next steps for this visitor" : "Routes that get you to the right homes faster"}
                 </h3>
-                <p className="text-sm leading-6 text-muted-foreground">
+                <p className="text-sm leading-6 text-muted-foreground mt-1">
                   {hasSignal
-                    ? "These routes use known intent to move the visitor back into the right fichas faster."
-                    : "These are the strongest routes when the goal is to reach real properties faster and move into full fichas with better current feed support."}
+                    ? "These routes use known intent to move the visitor back into the right property pages faster."
+                    : "These are the strongest routes when the point is not more browsing, but better shortlisting with the current live feed."}
                 </p>
               </div>
             </div>
-            <div className="grid gap-4 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {primaryCards.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}
-                  className="rounded-[24px] border border-border/35 bg-background px-5 py-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:text-primary"
+                  className="rounded-[22px] sm:rounded-[24px] border border-border/35 bg-background px-4 sm:px-5 py-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:text-primary"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-base font-semibold">{link.label}</span>
@@ -151,19 +151,19 @@ const SeoHubSection = ({
                   </div>
                   <p className="mt-3 text-sm leading-7 text-muted-foreground">{link.note}</p>
                   <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-primary/80">
-                    Open route, then open fichas
+                    Open the route, then test real properties
                   </p>
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-border/40 bg-background p-7">
+          <div className="rounded-[24px] sm:rounded-[28px] border border-border/40 bg-background p-5 sm:p-7">
             <div className="flex items-center gap-3 mb-5">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <MapPinned className="h-5 w-5" />
               </div>
-              <h3 className="font-serif text-2xl font-semibold">Property area routes</h3>
+              <h3 className="font-serif text-xl sm:text-2xl font-semibold">Property area routes</h3>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {orderedAreaLinks.map((link) => (
@@ -177,17 +177,17 @@ const SeoHubSection = ({
                 </Link>
               ))}
             </div>
-            <p className="mt-5 text-sm leading-7 text-muted-foreground">
-              Use these pages to land on the right area faster, then move into the property cards and full fichas instead of staying in comparison mode for too long.
+            <p className="mt-5 text-sm leading-6 sm:leading-7 text-muted-foreground">
+              Use these pages to reach the right area faster, then move into full property pages before comparison mode turns into indecision.
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-border/40 bg-background p-7">
+          <div className="rounded-[24px] sm:rounded-[28px] border border-border/40 bg-background p-5 sm:p-7">
             <div className="flex items-center gap-3 mb-5">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <FileText className="h-5 w-5" />
               </div>
-              <h3 className="font-serif text-2xl font-semibold">Buyer guides that support the shortlist</h3>
+              <h3 className="font-serif text-xl sm:text-2xl font-semibold">Guides that make the shortlist sharper</h3>
             </div>
             <div className="grid gap-3">
               {orderedGuideLinks.map((link) => (
@@ -201,8 +201,8 @@ const SeoHubSection = ({
                 </Link>
               ))}
             </div>
-            <p className="mt-5 text-sm leading-7 text-muted-foreground">
-              Read only what helps you shortlist better. The commercial goal is still the same: open real property pages and enquire on concrete homes with confidence.
+            <p className="mt-5 text-sm leading-6 sm:leading-7 text-muted-foreground">
+              Read only what helps you decide better. The goal is still the same: open real property pages and enquire on concrete homes with confidence.
             </p>
           </div>
         </div>

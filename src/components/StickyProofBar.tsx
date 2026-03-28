@@ -31,7 +31,7 @@ const StickyProofBar = () => {
 
   return (
     <div
-      className="fixed bottom-20 sm:bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 flex items-center justify-center sm:justify-start rounded-full overflow-hidden enter-fade-up"
+      className="fixed bottom-20 sm:bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 flex items-center justify-center sm:justify-start rounded-2xl sm:rounded-full overflow-hidden enter-fade-up"
       style={{
         background: "hsl(214 35% 10% / 0.55)",
         backdropFilter: "blur(20px)",
@@ -75,7 +75,7 @@ const StickyProofBar = () => {
             {/* Fondo dorado sutil en móvil, hover en desktop */}
             <span className="absolute inset-0 bg-gradient-to-r from-[hsl(38_72%_44%/0.2)] to-[hsl(38_72%_44%/0.08)] sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300" />
             <span className="relative flex items-center gap-2">
-              <span className="text-[hsl(38_72%_62%)] text-xs sm:text-[11px] font-semibold uppercase tracking-[0.15em] sm:tracking-[0.18em] whitespace-nowrap">
+              <span className="text-[hsl(38_72%_62%)] text-[11px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] sm:tracking-[0.18em] text-center">
                 Abrir fichas
               </span>
               <span className="flex items-center justify-center w-5 h-5 rounded-full border border-[hsl(38_72%_44%/0.5)] group-hover:border-[hsl(38_72%_62%)] group-hover:bg-[hsl(38_72%_44%/0.2)] transition-all duration-300">

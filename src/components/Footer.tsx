@@ -1,7 +1,7 @@
 import { Phone, Mail, MapPin, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/contexts/LanguageContext";
-import logo from "@/assets/logo_legado.png";
+import logo from "@/assets/logo_legado.webp";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -12,7 +12,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8 md:mb-12">
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/">
-              <img src={logo} alt="Legado Inmobiliaria" className="h-20 md:h-24" loading="lazy" decoding="async" />
+              <img
+                src={logo}
+                alt="Legado Inmobiliaria"
+                width="320"
+                height="122"
+                className="h-20 md:h-24 w-auto"
+                loading="lazy"
+                decoding="async"
+              />
             </Link>
             <p className="text-muted-foreground text-sm mt-4 leading-relaxed max-w-xs">{t("footer.desc")}</p>
           </div>
