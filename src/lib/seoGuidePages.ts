@@ -38,7 +38,7 @@ const guides: SeoGuidePageConfig[] = [
     slug: "best-areas-to-buy-property-in-alicante-province",
     seoTitle: "Best Areas to Buy Property in Alicante Province | 360 Buyer Guide",
     seoDescription:
-      "Compare the best areas to buy property in Alicante province with guidance for foreign buyers on lifestyle fit, property type, mortgage strategy, legal coordination and the full buying journey.",
+      "Compare the best areas to buy property in Alicante province with guidance on lifestyle fit, property type, mortgage strategy and legal coordination.",
     h1: "Best Areas to Buy Property in Alicante Province",
     eyebrow: "Area comparison guide",
     intro:

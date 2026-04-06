@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { useBlogPosts, useBlogCategories } from "@/hooks/useBlog";
-import { buildBreadcrumbSchema, buildBlogListingSchema } from "@/lib/seo-schemas";
+import { buildBreadcrumbSchema, buildBlogListingSchema, buildWebPageSchema } from "@/lib/seo-schemas";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { SITE_URL } from "@/lib/site";
 
@@ -30,6 +30,14 @@ const Blog = () => {
   ]);
 
   const itemListJsonLd = posts ? buildBlogListingSchema(posts) : null;
+  const blogPageSchema = buildWebPageSchema({
+    name: "Blog Inmobiliario | Legado Inmobiliaria",
+    description:
+      "Articulos, guias y analisis para comprar propiedad en Costa Blanca con mejor criterio financiero, legal y de ubicacion.",
+    path: "/blog",
+    type: "CollectionPage",
+    breadcrumb: breadcrumbJsonLd,
+  });
 
   const featured = posts?.[0];
   const rest = posts?.slice(1);
@@ -41,7 +49,7 @@ const Blog = () => {
         description="Artículos expertos sobre compraventa de propiedades en la Costa Blanca. Guías para compradores, tendencias del mercado, aspectos legales y fiscales."
         canonical={`${SITE_URL}/blog`}
         keywords="blog inmobiliario Costa Blanca, comprar propiedad España, guía compradores extranjeros, mercado inmobiliario Benidorm, inversión inmobiliaria Alicante"
-        jsonLd={[breadcrumbJsonLd, ...(itemListJsonLd ? [itemListJsonLd] : [])]}
+        jsonLd={[breadcrumbJsonLd, blogPageSchema, ...(itemListJsonLd ? [itemListJsonLd] : [])]}
       />
       <Navbar />
 

@@ -10,7 +10,7 @@ import { useExternalProperties, type ExternalPropertyFilters, type ExternalPrope
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MessageCircle, Users, CalendarDays, Shield, Award, Clock, AlertTriangle, RefreshCw } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
-import { buildBreadcrumbSchema } from "@/lib/seo-schemas";
+import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo-schemas";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
@@ -243,6 +243,13 @@ const Properties = () => {
     { name: "Inicio", url: SITE_URL },
     { name: "Propiedades", url: `${SITE_URL}/propiedades` },
   ]);
+  const collectionPageSchema = buildWebPageSchema({
+    name: ui.seoTitle,
+    description: ui.seoDescription,
+    path: "/propiedades",
+    type: "CollectionPage",
+    breadcrumb,
+  });
 
   return (
     <main className="min-h-screen bg-background">
@@ -250,7 +257,8 @@ const Properties = () => {
         title={ui.seoTitle}
         description={ui.seoDescription}
         canonical={`${SITE_URL}/propiedades`}
-        jsonLd={[breadcrumb]}
+        keywords="propiedades en venta Costa Blanca, pisos en venta Benidorm, villas Alicante, comprar casa en Costa Blanca, catalogo inmobiliario Benidorm"
+        jsonLd={[breadcrumb, collectionPageSchema]}
       />
       <Navbar />
 

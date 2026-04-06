@@ -1,29 +1,41 @@
-import { SITE_URL } from "@/lib/site";
+import {
+  BUSINESS_CITY,
+  BUSINESS_COUNTRY,
+  BUSINESS_LATITUDE,
+  BUSINESS_LONGITUDE,
+  BUSINESS_PHONE,
+  BUSINESS_POSTAL_CODE,
+  BUSINESS_REGION,
+  BUSINESS_STREET,
+  DEFAULT_OG_IMAGE,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/site";
 
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "RealEstateAgent",
-  name: "Legado Inmobiliaria",
+  "@id": `${SITE_URL}/#organization`,
+  name: SITE_NAME,
   alternateName: "Legado Inmobiliaria de Lujo",
   description:
     "A 360 property buying platform for foreign buyers across Alicante province, combining property search, mortgage broker support, legal coordination, and end-to-end assistance.",
   url: SITE_URL,
   logo: `${SITE_URL}/favicon.png`,
-  image: `${SITE_URL}/og-image.jpg`,
-  telephone: "+34965065921",
-  email: "pedrotorres10x.es",
+  image: DEFAULT_OG_IMAGE,
+  telephone: BUSINESS_PHONE,
   address: {
     "@type": "PostalAddress",
-    streetAddress: "C/ Esperanto 15",
-    addressLocality: "Benidorm",
-    addressRegion: "Alicante",
-    postalCode: "03501",
-    addressCountry: "ES",
+    streetAddress: BUSINESS_STREET,
+    addressLocality: BUSINESS_CITY,
+    addressRegion: BUSINESS_REGION,
+    postalCode: BUSINESS_POSTAL_CODE,
+    addressCountry: BUSINESS_COUNTRY,
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: 38.5411,
-    longitude: -0.1225,
+    latitude: BUSINESS_LATITUDE,
+    longitude: BUSINESS_LONGITUDE,
   },
   areaServed: [
     { "@type": "AdministrativeArea", name: "Alicante province" },
@@ -47,7 +59,7 @@ export const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": ["RealEstateAgent", "LocalBusiness"],
   "@id": `${SITE_URL}/#business`,
-  name: "Legado Inmobiliaria",
+  name: SITE_NAME,
   alternateName: "Legado Inmobiliaria de Lujo",
   description:
     "360 property buying platform for foreign buyers across Alicante province, with live property search, mortgage broker support, legal coordination and end-to-end purchase assistance.",
@@ -59,27 +71,26 @@ export const localBusinessSchema = {
     height: 512,
   },
   image: [
-    `${SITE_URL}/og-image.jpg`,
+    DEFAULT_OG_IMAGE,
   ],
-  telephone: "+34 965 065 921",
-  email: "pedrotorres10x.es",
+  telephone: BUSINESS_PHONE,
   priceRange: "€€€",
   currenciesAccepted: "EUR",
   paymentAccepted: "Cash, Credit Card, Bank Transfer",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "C/ Esperanto 15",
-    addressLocality: "Benidorm",
-    addressRegion: "Alicante",
-    postalCode: "03501",
-    addressCountry: "ES",
+    streetAddress: BUSINESS_STREET,
+    addressLocality: BUSINESS_CITY,
+    addressRegion: BUSINESS_REGION,
+    postalCode: BUSINESS_POSTAL_CODE,
+    addressCountry: BUSINESS_COUNTRY,
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: 38.5411,
-    longitude: -0.1225,
+    latitude: BUSINESS_LATITUDE,
+    longitude: BUSINESS_LONGITUDE,
   },
-  hasMap: "https://maps.google.com/?q=38.5411,-0.1225",
+  hasMap: `https://maps.google.com/?q=${BUSINESS_LATITUDE},${BUSINESS_LONGITUDE}`,
   areaServed: [
     { "@type": "AdministrativeArea", name: "Alicante province" },
     { "@type": "City", name: "Benidorm" },
@@ -177,8 +188,10 @@ export const localBusinessSchema = {
 export const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Legado Inmobiliaria",
+  "@id": `${SITE_URL}/#website`,
+  name: SITE_NAME,
   url: SITE_URL,
+  publisher: { "@id": `${SITE_URL}/#organization` },
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -188,6 +201,46 @@ export const websiteSchema = {
     "query-input": "required name=search_term_string",
   },
 };
+
+type WebPageSchemaOptions = {
+  name: string;
+  description: string;
+  path: string;
+  type?: "WebPage" | "CollectionPage" | "AboutPage" | "SearchResultsPage" | "ItemPage";
+  breadcrumb?: ReturnType<typeof buildBreadcrumbSchema>;
+  image?: string;
+  inLanguage?: string;
+};
+
+export function buildWebPageSchema({
+  name,
+  description,
+  path,
+  type = "WebPage",
+  breadcrumb,
+  image = DEFAULT_OG_IMAGE,
+  inLanguage = "es",
+}: WebPageSchemaOptions) {
+  const url = `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": type,
+    "@id": `${url}#webpage`,
+    url,
+    name,
+    description,
+    inLanguage,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    about: { "@id": `${SITE_URL}/#organization` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      url: image,
+    },
+    ...(breadcrumb ? { breadcrumb } : {}),
+  };
+}
 
 export const faqSchema = {
   "@context": "https://schema.org",

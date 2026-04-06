@@ -13,6 +13,10 @@ export const LANGUAGE_LABELS: Record<Language, string> = {
 
 const SUPPORTED_LANGUAGES: Language[] = ["es", "en", "fr", "de"];
 
+function isSupportedLanguage(value: string | null): value is Language {
+  return Boolean(value && SUPPORTED_LANGUAGES.includes(value as Language));
+}
+
 function detectBrowserLanguage(): Language {
   const browserLang = navigator.language?.split("-")[0]?.toLowerCase();
   if (browserLang && SUPPORTED_LANGUAGES.includes(browserLang as Language)) {
@@ -31,11 +35,27 @@ function detectBrowserLanguage(): Language {
 function getSavedLanguage(): Language | null {
   try {
     const saved = localStorage.getItem("luxestate_lang");
-    if (saved && SUPPORTED_LANGUAGES.includes(saved as Language)) return saved as Language;
+    if (isSupportedLanguage(saved)) return saved;
   } catch {
     // Ignore localStorage access errors and fall back to browser detection.
   }
   return null;
+}
+
+function getLanguageFromUrl(): Language | null {
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get("lang")?.toLowerCase() ?? null;
+  return isSupportedLanguage(lang) ? lang : null;
+}
+
+function syncLanguageInUrl(lang: Language) {
+  const url = new URL(window.location.href);
+  if (lang === "es") {
+    url.searchParams.delete("lang");
+  } else {
+    url.searchParams.set("lang", lang);
+  }
+  window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 // All translatable strings with Spanish as base
@@ -592,11 +612,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const applyLanguage = useCallback(async (lang: Language) => {
     setLanguageState(lang);
+    document.documentElement.lang = lang;
     try {
       localStorage.setItem("luxestate_lang", lang);
     } catch {
       // Ignore localStorage write failures.
     }
+    syncLanguageInUrl(lang);
 
     if (lang === "es") {
       setTranslations(buildTranslations("es"));
@@ -634,8 +656,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (initialized) return;
     setInitialized(true);
+    const fromUrl = getLanguageFromUrl();
     const saved = getSavedLanguage();
-    const detected = saved || detectBrowserLanguage();
+    const detected = fromUrl || saved || detectBrowserLanguage();
+    document.documentElement.lang = detected;
     if (detected !== "es") {
       applyLanguage(detected);
     }

@@ -1,0 +1,53 @@
+name: Enterprise SEO
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  enterprise-seo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run enterprise SEO build
+        run: npm run build
+
+      - name: Enforce SEO thresholds
+        run: npm run seo:thresholds
+
+      - name: Upload SEO scorecard
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-scorecard
+          path: |
+            dist/seo/scorecard.md
+            dist/seo/scorecard.json
+            dist/prerender-manifest.json
+
+      - name: Upload prerender sample
+        uses: actions/upload-artifact@v4
+        with:
+          name: prerendered-pages
+          path: |
+            dist/index.html
+            dist/property-for-sale-benidorm/index.html
+            dist/property-for-sale-alicante-province/index.html
+            dist/guides/how-to-buy-property-in-alicante-as-a-foreigner/index.html

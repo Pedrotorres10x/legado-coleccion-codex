@@ -1,5 +1,25 @@
 import { useEffect } from "react";
-import { SITE_URL } from "@/lib/site";
+import {
+  BUSINESS_CITY,
+  BUSINESS_COUNTRY,
+  BUSINESS_LATITUDE,
+  BUSINESS_LONGITUDE,
+  BUSINESS_PHONE,
+  BUSINESS_REGION,
+  DEFAULT_LOCALE,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+  SITE_NAME,
+  SITE_URL,
+  SUPPORTED_LOCALES,
+  localeToHtmlLang,
+  localeToOgLocale,
+} from "@/lib/site";
+
+type AlternateLink = {
+  hrefLang: string;
+  href: string;
+};
 
 interface SEOHeadProps {
   title: string;
@@ -10,6 +30,8 @@ interface SEOHeadProps {
   ogType?: string;
   noIndex?: boolean;
   jsonLd?: object | object[];
+  locale?: string;
+  alternates?: AlternateLink[];
   // Article-specific Open Graph
   articleAuthor?: string;
   articlePublishedTime?: string;
@@ -28,11 +50,13 @@ const SEOHead = ({
   title,
   description,
   canonical,
-  ogImage = `${SITE_URL}/og-image.jpg`,
+  ogImage = DEFAULT_OG_IMAGE,
   ogImageAlt,
   ogType = "website",
   noIndex = false,
   jsonLd,
+  locale = DEFAULT_LOCALE,
+  alternates,
   articleAuthor,
   articlePublishedTime,
   articleModifiedTime,
@@ -60,7 +84,18 @@ const SEOHead = ({
     };
 
     // Standard meta
+    document.documentElement.lang = localeToHtmlLang(locale);
+
     setMeta("name", "description", description);
+    setMeta("name", "author", SITE_NAME);
+    setMeta("name", "publisher", SITE_NAME);
+    setMeta("name", "application-name", SITE_NAME);
+    setMeta("name", "apple-mobile-web-app-title", SITE_NAME);
+    setMeta("name", "theme-color", "#171717");
+    setMeta("name", "format-detection", "telephone=yes");
+    setMeta("name", "referrer", "strict-origin-when-cross-origin");
+    setMeta("http-equiv", "content-language", locale);
+    setMeta("name", "language", locale);
     if (keywords) {
       setMeta("name", "keywords", keywords);
     } else {
@@ -68,20 +103,40 @@ const SEOHead = ({
     }
     if (noIndex) {
       setMeta("name", "robots", "noindex, nofollow");
+      setMeta("name", "googlebot", "noindex, nofollow");
+      setMeta("name", "bingbot", "noindex, nofollow");
     } else {
       setMeta("name", "robots", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+      setMeta("name", "googlebot", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+      setMeta("name", "bingbot", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
     }
+    setMeta("name", "geo.region", `${BUSINESS_COUNTRY}-${BUSINESS_REGION.toUpperCase()}`);
+    setMeta("name", "geo.placename", BUSINESS_CITY);
+    setMeta("name", "geo.position", `${BUSINESS_LATITUDE};${BUSINESS_LONGITUDE}`);
+    setMeta("name", "ICBM", `${BUSINESS_LATITUDE}, ${BUSINESS_LONGITUDE}`);
+    setMeta("name", "business:contact_data:locality", BUSINESS_CITY);
+    setMeta("name", "business:contact_data:region", BUSINESS_REGION);
+    setMeta("name", "business:contact_data:country_name", "Spain");
+    setMeta("name", "business:contact_data:phone_number", BUSINESS_PHONE);
 
     // Open Graph
     setMeta("property", "og:title", title);
     setMeta("property", "og:description", description);
     setMeta("property", "og:image", ogImage);
-    setMeta("property", "og:image:alt", ogImageAlt || title);
+    setMeta("property", "og:image:alt", ogImageAlt || DEFAULT_OG_IMAGE_ALT || title);
     setMeta("property", "og:image:width", "1200");
     setMeta("property", "og:image:height", "630");
+    setMeta("property", "og:image:type", ogImage.endsWith(".png") ? "image/png" : "image/jpeg");
     setMeta("property", "og:type", ogType);
-    setMeta("property", "og:site_name", "Legado Inmobiliaria");
-    setMeta("property", "og:locale", "es_ES");
+    setMeta("property", "og:site_name", SITE_NAME);
+    setMeta("property", "og:locale", localeToOgLocale(locale));
+    document.querySelectorAll('meta[property="og:locale:alternate"]').forEach((el) => el.remove());
+    SUPPORTED_LOCALES.filter((value) => value !== locale).forEach((value) => {
+      const el = document.createElement("meta");
+      el.setAttribute("property", "og:locale:alternate");
+      el.setAttribute("content", localeToOgLocale(value));
+      document.head.appendChild(el);
+    });
     if (canonical) {
       setMeta("property", "og:url", canonical);
     }
@@ -111,7 +166,9 @@ const SEOHead = ({
     setMeta("name", "twitter:title", title);
     setMeta("name", "twitter:description", description);
     setMeta("name", "twitter:image", ogImage);
-    setMeta("name", "twitter:image:alt", ogImageAlt || title);
+    setMeta("name", "twitter:image:alt", ogImageAlt || DEFAULT_OG_IMAGE_ALT || title);
+    setMeta("name", "twitter:label1", "Phone");
+    setMeta("name", "twitter:data1", BUSINESS_PHONE);
     if (canonical) setMeta("name", "twitter:url", canonical);
 
     // Canonical
@@ -123,24 +180,27 @@ const SEOHead = ({
         document.head.appendChild(canonicalEl);
       }
       canonicalEl.setAttribute("href", canonical);
+    } else if (canonicalEl) {
+      canonicalEl.remove();
     }
 
     // Hreflang tags
-    const langs = ["es", "en", "fr", "de"];
     document.querySelectorAll('link[hreflang]').forEach((el) => el.remove());
     if (canonical) {
-      const baseUrl = canonical.split("?")[0];
-      langs.forEach((lang) => {
+      const alternateLinks = alternates && alternates.length > 0
+        ? alternates
+        : [{ hrefLang: localeToHtmlLang(locale), href: canonical }];
+      alternateLinks.forEach(({ hrefLang, href }) => {
         const link = document.createElement("link");
         link.setAttribute("rel", "alternate");
-        link.setAttribute("hreflang", lang);
-        link.setAttribute("href", `${baseUrl}?lang=${lang}`);
+        link.setAttribute("hreflang", hrefLang);
+        link.setAttribute("href", href);
         document.head.appendChild(link);
       });
       const xDefault = document.createElement("link");
       xDefault.setAttribute("rel", "alternate");
       xDefault.setAttribute("hreflang", "x-default");
-      xDefault.setAttribute("href", baseUrl);
+      xDefault.setAttribute("href", canonical);
       document.head.appendChild(xDefault);
     }
 
@@ -163,11 +223,12 @@ const SEOHead = ({
     return () => {
       document.querySelectorAll('script[data-seo-jsonld]').forEach((el) => el.remove());
       document.querySelectorAll('link[hreflang]').forEach((el) => el.remove());
+      document.querySelectorAll('meta[property="og:locale:alternate"]').forEach((el) => el.remove());
       document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
       articleProps.forEach(prop => removeMeta("property", prop));
       removeMeta("name", "keywords");
     };
-  }, [title, description, canonical, ogImage, ogImageAlt, ogType, noIndex, jsonLd, articleAuthor, articlePublishedTime, articleModifiedTime, articleSection, articleTags, keywords]);
+  }, [title, description, canonical, ogImage, ogImageAlt, ogType, noIndex, jsonLd, locale, alternates, articleAuthor, articlePublishedTime, articleModifiedTime, articleSection, articleTags, keywords]);
 
   return null;
 };

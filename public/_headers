@@ -1,0 +1,11 @@
+/admin
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+
+/gracias
+  X-Robots-Tag: noindex, nofollow
+
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate

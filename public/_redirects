@@ -1,2 +1,3 @@
+# Existing prerendered files in dist/*/index.html are served before this SPA fallback.
 /share/:slug  https://vrywyqpxmmzikaedjoxt.supabase.co/functions/v1/property-og?slug=:slug  200
 /*                    /index.html   200

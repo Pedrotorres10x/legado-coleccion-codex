@@ -50,9 +50,9 @@ export type SeoLandingPageConfig = {
 const pages: SeoLandingPageConfig[] = [
   {
     slug: "property-for-sale-alicante-province",
-    seoTitle: "Property for Sale in Alicante Province | 360 Buying Platform for Foreign Buyers",
+    seoTitle: "Property for Sale in Alicante Province | Legado Inmobiliaria",
     seoDescription:
-      "Explore property for sale across Alicante province with a 360 buying platform for foreign buyers, combining search, mortgage support, legal coordination, and end-to-end assistance.",
+      "Explore property for sale across Alicante province with search, mortgage support, legal coordination and end-to-end buying help for foreign buyers.",
     h1: "Property for Sale in Alicante Province",
     eyebrow: "Alicante province buying platform",
     intro:

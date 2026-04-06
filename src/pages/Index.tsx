@@ -7,7 +7,13 @@ import PersonalizedNextStep from "@/components/PersonalizedNextStep";
 import SEOHead from "@/components/SEOHead";
 import StickyProofBar from "@/components/StickyProofBar";
 import DeferredSection from "@/components/DeferredSection";
-import { organizationSchema, websiteSchema, faqSchema, localBusinessSchema } from "@/lib/seo-schemas";
+import {
+  organizationSchema,
+  websiteSchema,
+  faqSchema,
+  localBusinessSchema,
+  buildWebPageSchema,
+} from "@/lib/seo-schemas";
 import { SITE_URL } from "@/lib/site";
 
 // Below-fold components — lazy loaded
@@ -23,13 +29,21 @@ const HomeContactSection = lazy(() => import("@/components/HomeContactSection"))
 const Footer = lazy(() => import("@/components/Footer"));
 
 const Index = () => {
+  const homePageSchema = buildWebPageSchema({
+    name: "Inicio | Legado Inmobiliaria",
+    description:
+      "Boutique inmobiliaria en Benidorm y Costa Blanca con catalogo vivo de propiedades, soporte hipotecario y coordinacion legal para compradores nacionales e internacionales.",
+    path: "/",
+  });
+
   return (
     <main className="min-h-screen bg-background">
       <SEOHead
-        title="Legado Inmobiliaria | Propiedades de Lujo en Benidorm y Costa Blanca"
-        description="Tu boutique inmobiliaria. Más de 900 propiedades exclusivas en Benidorm, Alicante y la Costa Blanca, y propiedades seleccionadas en destinos internacionales."
+        title="Legado Inmobiliaria | Boutique inmobiliaria en Benidorm y Costa Blanca"
+        description="Boutique inmobiliaria en Benidorm y Costa Blanca con mas de 900 propiedades exclusivas, soporte de compra y acompanamiento integral para compradores exigentes."
         canonical={SITE_URL}
-        jsonLd={[organizationSchema, websiteSchema, faqSchema, localBusinessSchema]}
+        keywords="inmobiliaria Benidorm, inmobiliaria Costa Blanca, propiedades de lujo Alicante, comprar vivienda en Benidorm, real estate Costa Blanca"
+        jsonLd={[organizationSchema, websiteSchema, localBusinessSchema, homePageSchema, faqSchema]}
       />
       <StickyProofBar />
       <Navbar />

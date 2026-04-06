@@ -7,7 +7,7 @@ import SEOHead from "@/components/SEOHead";
 import SeoQuickNav from "@/components/SeoQuickNav";
 import { Button } from "@/components/ui/button";
 import { SITE_URL } from "@/lib/site";
-import { buildBreadcrumbSchema } from "@/lib/seo-schemas";
+import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo-schemas";
 import { seoGuidePages } from "@/lib/seoGuidePages";
 import { recordGuideIntent } from "@/lib/personalization";
 
@@ -58,6 +58,12 @@ const SeoGuidePage = ({ slug }: SeoGuidePageProps) => {
     { name: "Home", url: SITE_URL },
     { name: guide.h1, url: `${SITE_URL}/${guide.slug}` },
   ]);
+  const guidePageSchema = buildWebPageSchema({
+    name: guide.seoTitle,
+    description: guide.seoDescription,
+    path: `/${guide.slug}`,
+    breadcrumb,
+  });
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -65,7 +71,8 @@ const SeoGuidePage = ({ slug }: SeoGuidePageProps) => {
         title={guide.seoTitle}
         description={guide.seoDescription}
         canonical={`${SITE_URL}/${guide.slug}`}
-        jsonLd={[breadcrumb, buildFaqSchema(guide.faq)]}
+        keywords={[guide.h1, "buy property in Spain", "Costa Blanca property guide", "Legado Inmobiliaria"].join(", ")}
+        jsonLd={[breadcrumb, guidePageSchema, buildFaqSchema(guide.faq)]}
       />
       <Navbar />
 

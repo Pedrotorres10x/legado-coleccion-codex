@@ -57,6 +57,8 @@ const HeroSection = () => {
       backToCatalog: string;
       statAria: string;
       heroImageAlt: string;
+      continueByArea: (label: string) => string;
+      followArea: (label: string) => string;
     }
   > = {
     es: {
@@ -71,6 +73,8 @@ const HeroSection = () => {
       backToCatalog: "O volver al catalogo completo",
       statAria: "Ir a estadistica",
       heroImageAlt: "Villa de lujo con piscina infinita y vistas al mar en la Costa Blanca",
+      continueByArea: (label) => `Seguimos por ${label}`,
+      followArea: (label) => `Seguir por ${label}`,
     },
     en: {
       personalizedKickerRecent: "Your search already has context",
@@ -84,6 +88,8 @@ const HeroSection = () => {
       backToCatalog: "Or return to the full catalogue",
       statAria: "Go to statistic",
       heroImageAlt: "Luxury villa with infinity pool and sea views on the Costa Blanca",
+      continueByArea: (label) => `Let's continue in ${label}`,
+      followArea: (label) => `Continue in ${label}`,
     },
     fr: {
       personalizedKickerRecent: "Votre recherche a deja du contexte",
@@ -97,6 +103,8 @@ const HeroSection = () => {
       backToCatalog: "Ou revenir au catalogue complet",
       statAria: "Aller a la statistique",
       heroImageAlt: "Villa de luxe avec piscine a debordement et vue mer sur la Costa Blanca",
+      continueByArea: (label) => `On continue sur ${label}`,
+      followArea: (label) => `Continuer sur ${label}`,
     },
     de: {
       personalizedKickerRecent: "Ihre Suche hat bereits Kontext",
@@ -110,6 +118,8 @@ const HeroSection = () => {
       backToCatalog: "Oder zum gesamten Katalog zurueck",
       statAria: "Zur Statistik wechseln",
       heroImageAlt: "Luxusvilla mit Infinity-Pool und Meerblick an der Costa Blanca",
+      continueByArea: (label) => `Wir machen weiter in ${label}`,
+      followArea: (label) => `Weiter in ${label}`,
     },
   };
   const ui = heroCopyByLanguage[language];
@@ -122,7 +132,7 @@ const HeroSection = () => {
   const personalizedKicker = recentProperty
     ? ui.personalizedKickerRecent
     : topArea
-      ? `Seguimos por ${topArea.label}`
+      ? ui.continueByArea(topArea.label)
       : topTopic
         ? ui.personalizedKickerTopic
         : null;
@@ -138,7 +148,7 @@ const HeroSection = () => {
   const primaryCta = recentProperty
     ? { label: ui.primaryRecent, href: recentProperty.href }
     : topArea
-      ? { label: `Seguir por ${topArea.label}`, href: `${topArea.href}#live-inventory` }
+      ? { label: ui.followArea(topArea.label), href: `${topArea.href}#live-inventory` }
       : { label: ui.primaryDefault, href: "/propiedades" };
 
   const secondaryHref = "/propiedades";
@@ -190,7 +200,7 @@ const HeroSection = () => {
         {/* Title */}
         <h1
           className="font-serif text-[clamp(1.75rem,5vw,4.8rem)] md:text-[clamp(2.8rem,5vw,4.8rem)] lg:text-[clamp(3.6rem,6vw,5.8rem)] font-bold leading-[1.04] sm:leading-[1.08] break-words"
-          lang="es"
+          lang={language}
           style={{ animationDelay: "180ms" }}
         >
           <span className="text-white drop-shadow-lg">

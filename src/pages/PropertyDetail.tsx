@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import React, { useState, useEffect, useCallback } from "react";
 import { trackViewContent, setupScrollTracking, setupTimeOnPage, trackContact, trackShare } from "@/lib/metaPixel";
 import SEOHead from "@/components/SEOHead";
-import { buildPropertySchema, buildBreadcrumbSchema } from "@/lib/seo-schemas";
+import { buildPropertySchema, buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo-schemas";
 import { propertyUrl, propertyShareUrl, ensurePropertyOg } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
 import {
@@ -28,14 +28,64 @@ import {
 import { usePersonalization } from "@/hooks/usePersonalization";
 import { Language, useTranslation } from "@/contexts/LanguageContext";
 
-const formatPrice = (v: number) =>
-  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
+const PRICE_LOCALES: Record<Language, string> = {
+  es: "es-ES",
+  en: "en-GB",
+  fr: "fr-FR",
+  de: "de-DE",
+};
+
+const formatPrice = (v: number, language: Language) =>
+  new Intl.NumberFormat(PRICE_LOCALES[language], { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
 
 const TYPE_LABELS: Record<string, string> = {
   piso: "Piso", casa: "Casa", villa: "Villa", atico: "Ático",
   duplex: "Dúplex", chalet: "Chalet", estudio: "Estudio", local: "Local", otro: "Otro",
   adosado: "Adosado",
 };
+
+const TYPE_LABELS_BY_LANGUAGE: Record<Language, Record<string, string>> = {
+  es: TYPE_LABELS,
+  en: {
+    piso: "Apartment",
+    casa: "House",
+    villa: "Villa",
+    atico: "Penthouse",
+    duplex: "Duplex",
+    chalet: "Detached house",
+    estudio: "Studio",
+    local: "Commercial unit",
+    otro: "Property",
+    adosado: "Townhouse",
+  },
+  fr: {
+    piso: "Appartement",
+    casa: "Maison",
+    villa: "Villa",
+    atico: "Penthouse",
+    duplex: "Duplex",
+    chalet: "Maison individuelle",
+    estudio: "Studio",
+    local: "Local commercial",
+    otro: "Bien",
+    adosado: "Maison mitoyenne",
+  },
+  de: {
+    piso: "Wohnung",
+    casa: "Haus",
+    villa: "Villa",
+    atico: "Penthouse",
+    duplex: "Maisonette",
+    chalet: "Chalet",
+    estudio: "Studio",
+    local: "Gewerbeobjekt",
+    otro: "Immobilie",
+    adosado: "Reihenhaus",
+  },
+};
+
+const getPropertyTypeLabel = (type: string, language: Language) =>
+  TYPE_LABELS_BY_LANGUAGE[language][type] || TYPE_LABELS[type] || type;
 
 const PropertyDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -80,6 +130,55 @@ const PropertyDetail = () => {
       stayHere: "O quedarme en esta ficha y avanzar",
       similarEyebrow: "Sigue comparando",
       mobileCta: "Quiero valorar esta propiedad",
+      homeBreadcrumb: "Inicio",
+      propertiesBreadcrumb: "Propiedades",
+      similarDefaultTitle: "Propiedades similares",
+      similarAreaTitle: (label: string) => `Mas viviendas para seguir por ${label}`,
+      similarDefaultDesc: "Usalas para comparar mejor, pero intenta volver a la ficha que mas encaje contigo y consulta desde ahi cuando estes listo.",
+      similarAreaDesc: (label: string) => `Como ya has mostrado interes en ${label}, aqui te ensenamos otras fichas alineadas con esa ruta. Usalas para comparar, pero vuelve a esta vivienda si sigue siendo la que mejor encaja contigo.`,
+      bedroomsUnit: "dormitorios",
+      bathroomsUnit: "banos",
+      aboutFallback: "Una seleccion singular para compradores que buscan ubicacion, imagen y valor patrimonial en la Costa Blanca.",
+      shareCatalog: "Catalogo",
+      shareWhatsApp: "Compartir en WhatsApp",
+      shareFacebook: "Compartir en Facebook",
+      shareCopy: "Copiar enlace",
+      copied: "Copiado",
+      copy: "Copiar",
+      refLabel: "Ref",
+      photosLabel: "fotos",
+      usefulNextDescription: (label: string) => `Si todavia quieres comparar antes de enviar el formulario, sigue por ${label} y abre mas fichas alineadas con esta busqueda.`,
+      continueArea: (label: string) => `Seguir por ${label}`,
+      shareIntro: "Hola,",
+      shareEmailLead: "Te comparto esta propiedad que podria interesarte:",
+      shareEmailCta: "Ver ficha completa",
+      shareEmailClosing: "Un saludo,",
+      features: {
+        bedrooms: "Habitaciones",
+        bathrooms: "Banos",
+        area: "Superficie",
+        builtArea: "Construidos",
+        year: "Ano",
+        floor: "Planta",
+        operation: "Operacion",
+        sale: "Venta",
+        rent: "Alquiler",
+      },
+      amenities: {
+        garage: "Garaje",
+        pool: "Piscina",
+        terrace: "Terraza",
+        elevator: "Ascensor",
+        garden: "Jardin",
+      },
+      trust: {
+        protectedData: "Datos\nprotegidos",
+        mortgage: "Hipoteca\nno residente",
+        legal: "Proceso\nmas claro",
+        newBuild: "Compra\ncoordinada",
+        response: "Respuesta\nen 24h",
+        experience: "15+ anos\nexperiencia",
+      },
     },
     en: {
       notFoundTitle: "This property is no longer the right page to open",
@@ -100,6 +199,55 @@ const PropertyDetail = () => {
       stayHere: "Or stay on this listing and move forward",
       similarEyebrow: "Keep comparing",
       mobileCta: "Assess this property",
+      homeBreadcrumb: "Home",
+      propertiesBreadcrumb: "Properties",
+      similarDefaultTitle: "Similar properties",
+      similarAreaTitle: (label: string) => `More homes to continue in ${label}`,
+      similarDefaultDesc: "Use them to compare more clearly, but try to return to the listing that fits best and enquire from there when you are ready.",
+      similarAreaDesc: (label: string) => `Since you have already shown interest in ${label}, here are more listings aligned with that route. Use them to compare, but come back to this home if it still feels like the best fit.`,
+      bedroomsUnit: "bedrooms",
+      bathroomsUnit: "bathrooms",
+      aboutFallback: "A distinctive option for buyers seeking location, image and long-term property value on the Costa Blanca.",
+      shareCatalog: "Catalogue",
+      shareWhatsApp: "Share on WhatsApp",
+      shareFacebook: "Share on Facebook",
+      shareCopy: "Copy link",
+      copied: "Copied",
+      copy: "Copy",
+      refLabel: "Ref",
+      photosLabel: "photos",
+      usefulNextDescription: (label: string) => `If you still want to compare before sending the form, continue in ${label} and open more listings aligned with this search.`,
+      continueArea: (label: string) => `Continue in ${label}`,
+      shareIntro: "Hello,",
+      shareEmailLead: "I am sharing this property in case it is of interest:",
+      shareEmailCta: "Open full listing",
+      shareEmailClosing: "Best regards,",
+      features: {
+        bedrooms: "Bedrooms",
+        bathrooms: "Bathrooms",
+        area: "Area",
+        builtArea: "Built area",
+        year: "Year",
+        floor: "Floor",
+        operation: "Operation",
+        sale: "Sale",
+        rent: "Rent",
+      },
+      amenities: {
+        garage: "Garage",
+        pool: "Pool",
+        terrace: "Terrace",
+        elevator: "Lift",
+        garden: "Garden",
+      },
+      trust: {
+        protectedData: "Protected\ndata",
+        mortgage: "Non-resident\nmortgage",
+        legal: "Clearer\nprocess",
+        newBuild: "Coordinated\npurchase",
+        response: "Reply\nwithin 24h",
+        experience: "15+ years\nexperience",
+      },
     },
     fr: {
       notFoundTitle: "Ce bien n'est plus la bonne fiche a ouvrir",
@@ -120,6 +268,55 @@ const PropertyDetail = () => {
       stayHere: "Ou rester sur cette fiche et avancer",
       similarEyebrow: "Poursuivre la comparaison",
       mobileCta: "Evaluer ce bien",
+      homeBreadcrumb: "Accueil",
+      propertiesBreadcrumb: "Biens",
+      similarDefaultTitle: "Biens similaires",
+      similarAreaTitle: (label: string) => `D'autres biens pour continuer sur ${label}`,
+      similarDefaultDesc: "Servez-vous-en pour comparer plus clairement, puis revenez vers la fiche la plus pertinente pour avancer quand vous serez pret.",
+      similarAreaDesc: (label: string) => `Comme vous avez deja montre un interet pour ${label}, voici d'autres fiches alignees avec cette piste. Comparez-les, puis revenez a ce bien s'il reste le plus adapte.`,
+      bedroomsUnit: "chambres",
+      bathroomsUnit: "salles de bain",
+      aboutFallback: "Une option singuliere pour les acheteurs qui recherchent emplacement, image et valeur patrimoniale sur la Costa Blanca.",
+      shareCatalog: "Catalogue",
+      shareWhatsApp: "Partager sur WhatsApp",
+      shareFacebook: "Partager sur Facebook",
+      shareCopy: "Copier le lien",
+      copied: "Copie",
+      copy: "Copier",
+      refLabel: "Ref",
+      photosLabel: "photos",
+      usefulNextDescription: (label: string) => `Si vous voulez encore comparer avant d'envoyer le formulaire, continuez sur ${label} et ouvrez d'autres fiches alignees avec cette recherche.`,
+      continueArea: (label: string) => `Continuer sur ${label}`,
+      shareIntro: "Bonjour,",
+      shareEmailLead: "Je vous partage ce bien qui pourrait vous interesser :",
+      shareEmailCta: "Voir la fiche complete",
+      shareEmailClosing: "Bien cordialement,",
+      features: {
+        bedrooms: "Chambres",
+        bathrooms: "Salles de bain",
+        area: "Surface",
+        builtArea: "Surface construite",
+        year: "Annee",
+        floor: "Etage",
+        operation: "Operation",
+        sale: "Vente",
+        rent: "Location",
+      },
+      amenities: {
+        garage: "Garage",
+        pool: "Piscine",
+        terrace: "Terrasse",
+        elevator: "Ascenseur",
+        garden: "Jardin",
+      },
+      trust: {
+        protectedData: "Donnees\nprotegees",
+        mortgage: "Hypotheque\nnon-resident",
+        legal: "Processus\nplus clair",
+        newBuild: "Achat\ncoordonne",
+        response: "Reponse\nsous 24 h",
+        experience: "15+ ans\nd'experience",
+      },
     },
     de: {
       notFoundTitle: "Diese Immobilie ist nicht mehr die richtige Seite fuer den naechsten Schritt",
@@ -140,6 +337,55 @@ const PropertyDetail = () => {
       stayHere: "Oder auf diesem Expose bleiben und weitergehen",
       similarEyebrow: "Weiter vergleichen",
       mobileCta: "Diese Immobilie einordnen",
+      homeBreadcrumb: "Start",
+      propertiesBreadcrumb: "Immobilien",
+      similarDefaultTitle: "Ahnliche Immobilien",
+      similarAreaTitle: (label: string) => `Mehr Immobilien fuer ${label}`,
+      similarDefaultDesc: "Nutzen Sie diese Immobilien fuer einen klareren Vergleich, kehren Sie dann aber zu dem Expose zurueck, das am besten passt, und fragen Sie von dort an.",
+      similarAreaDesc: (label: string) => `Da Sie bereits Interesse an ${label} gezeigt haben, finden Sie hier weitere Exposes entlang dieser Route. Vergleichen Sie in Ruhe und kommen Sie dann zu dieser Immobilie zurueck, wenn sie weiterhin am besten passt.`,
+      bedroomsUnit: "Schlafzimmer",
+      bathroomsUnit: "Badezimmer",
+      aboutFallback: "Eine besondere Option fuer Kaeufer, die an der Costa Blanca auf Lage, Ausstrahlung und Vermoegenswert achten.",
+      shareCatalog: "Katalog",
+      shareWhatsApp: "Bei WhatsApp teilen",
+      shareFacebook: "Bei Facebook teilen",
+      shareCopy: "Link kopieren",
+      copied: "Kopiert",
+      copy: "Kopieren",
+      refLabel: "Ref",
+      photosLabel: "Fotos",
+      usefulNextDescription: (label: string) => `Wenn Sie vor dem Formular noch vergleichen moechten, gehen Sie in ${label} weiter und oeffnen Sie weitere Exposes, die zu dieser Suche passen.`,
+      continueArea: (label: string) => `Weiter in ${label}`,
+      shareIntro: "Hallo,",
+      shareEmailLead: "Ich teile diese Immobilie mit Ihnen, falls sie interessant ist:",
+      shareEmailCta: "Vollstaendiges Expose ansehen",
+      shareEmailClosing: "Viele Gruesse,",
+      features: {
+        bedrooms: "Schlafzimmer",
+        bathrooms: "Badezimmer",
+        area: "Flaeche",
+        builtArea: "Bebaute Flaeche",
+        year: "Jahr",
+        floor: "Etage",
+        operation: "Vorgang",
+        sale: "Kauf",
+        rent: "Miete",
+      },
+      amenities: {
+        garage: "Garage",
+        pool: "Pool",
+        terrace: "Terrasse",
+        elevator: "Aufzug",
+        garden: "Garten",
+      },
+      trust: {
+        protectedData: "Geschuetzte\nDaten",
+        mortgage: "Hypothek\nfuer Nichtresidenten",
+        legal: "Klarerer\nAblauf",
+        newBuild: "Koordinierter\nKauf",
+        response: "Antwort\ninnerhalb 24h",
+        experience: "15+ Jahre\nErfahrung",
+      },
     },
   }[language];
 
@@ -328,14 +574,50 @@ const PropertyDetail = () => {
     personalizedAlternatives.length > 0 ? personalizedAlternatives : similar;
   const alternativeTitle =
     personalizedAlternatives.length > 0 && topArea
-      ? `Más viviendas para seguir por ${topArea.label}`
-      : "Propiedades similares";
+      ? ui.similarAreaTitle(topArea.label)
+      : ui.similarDefaultTitle;
   const alternativeDescription =
     personalizedAlternatives.length > 0 && topArea
-      ? `Como ya has mostrado interés en ${topArea.label}, aquí te enseñamos otras fichas alineadas con esa ruta. Úsalas para comparar, pero vuelve a esta vivienda si sigue siendo la que mejor encaja contigo.`
-      : "Úsalas para comparar mejor, pero intenta volver a la ficha que más encaje contigo y consulta desde ahí cuando estés listo.";
+      ? ui.similarAreaDesc(topArea.label)
+      : ui.similarDefaultDesc;
   const leadContext = (() => {
     if (topTopic === "mortgage") {
+      if (language === "en") {
+        return {
+          panelTitle: "Interested in this property and want to assess mortgage options?",
+          panelDescription:
+            "If this home fits, we can help you move forward on the financial side too so you know whether it makes sense to reserve, visit or structure the purchase.",
+          formTitle: "Tell us how this home fits",
+          formDescription:
+            "If mortgage guidance matters too, mention it here and we will reply with the most useful next step for both the property and the financing.",
+          messagePlaceholder: "Message (for example: I am interested in this property and would like to assess mortgage options)",
+          submitLabel: "Send interest for this property",
+        };
+      }
+      if (language === "fr") {
+        return {
+          panelTitle: "Ce bien vous interesse et vous souhaitez evaluer le financement ?",
+          panelDescription:
+            "Si ce bien vous correspond, nous pouvons aussi vous aider sur la partie financiere afin de savoir s'il vaut mieux reserver, visiter ou structurer l'achat.",
+          formTitle: "Dites-nous comment ce bien vous correspond",
+          formDescription:
+            "Si le sujet du financement compte aussi, dites-le ici et nous vous repondrons avec le prochain pas le plus utile pour le bien et le credit.",
+          messagePlaceholder: "Message (par exemple : ce bien m'interesse et je souhaite evaluer les options de financement)",
+          submitLabel: "Envoyer mon interet pour ce bien",
+        };
+      }
+      if (language === "de") {
+        return {
+          panelTitle: "Interessieren Sie sich fuer diese Immobilie und moechten die Finanzierung einordnen?",
+          panelDescription:
+            "Wenn diese Immobilie passt, helfen wir Ihnen auch bei der finanziellen Seite, damit Sie wissen, ob Reservierung, Besichtigung oder Kaufstruktur sinnvoll sind.",
+          formTitle: "Sagen Sie uns, wie diese Immobilie passt",
+          formDescription:
+            "Wenn auch die Finanzierung wichtig ist, erwaehnen Sie das hier und wir melden uns mit dem naechsten sinnvollen Schritt fuer Immobilie und Hypothek.",
+          messagePlaceholder: "Nachricht (zum Beispiel: Ich interessiere mich fuer diese Immobilie und moechte Finanzierungsoptionen pruefen)",
+          submitLabel: "Interesse an dieser Immobilie senden",
+        };
+      }
       return {
         panelTitle: "¿Te interesa esta propiedad y quieres valorar hipoteca?",
         panelDescription:
@@ -349,6 +631,42 @@ const PropertyDetail = () => {
     }
 
     if (topTopic === "legal") {
+      if (language === "en") {
+        return {
+          panelTitle: "Interested in this property and want legal clarity?",
+          panelDescription:
+            "If this home fits, this is the right moment to contact us so we can help you move forward with document review, process and next steps without wasting time.",
+          formTitle: "Tell us what you need to review",
+          formDescription:
+            "You can tell us whether your concern is the legal side, the reservation or the buying process. The clearer the context, the better we can help.",
+          messagePlaceholder: "Message (for example: I am interested in this property and want to understand the legal process clearly)",
+          submitLabel: "Send enquiry about this property",
+        };
+      }
+      if (language === "fr") {
+        return {
+          panelTitle: "Ce bien vous interesse et vous voulez plus de clarte juridique ?",
+          panelDescription:
+            "Si ce bien vous convient, c'est le bon moment pour nous contacter afin d'avancer sur la verification documentaire, le processus et les prochaines etapes sans perdre de temps.",
+          formTitle: "Dites-nous ce que vous souhaitez verifier",
+          formDescription:
+            "Vous pouvez nous dire si votre doute concerne l'aspect juridique, la reservation ou le processus d'achat. Plus le contexte est clair, mieux nous pourrons vous aider.",
+          messagePlaceholder: "Message (par exemple : ce bien m'interesse et je veux bien comprendre le processus juridique)",
+          submitLabel: "Envoyer une demande sur ce bien",
+        };
+      }
+      if (language === "de") {
+        return {
+          panelTitle: "Interessieren Sie sich fuer diese Immobilie und wuenschen rechtliche Klarheit?",
+          panelDescription:
+            "Wenn diese Immobilie passt, ist jetzt der richtige Moment, uns zu kontaktieren, damit wir Sie bei Unterlagen, Ablauf und naechsten Schritten ohne Zeitverlust unterstuetzen koennen.",
+          formTitle: "Sagen Sie uns, was Sie pruefen moechten",
+          formDescription:
+            "Teilen Sie uns mit, ob Sie Fragen zum rechtlichen Teil, zur Reservierung oder zum Kaufprozess haben. Je klarer der Kontext, desto besser koennen wir helfen.",
+          messagePlaceholder: "Nachricht (zum Beispiel: Ich interessiere mich fuer diese Immobilie und moechte den rechtlichen Ablauf besser verstehen)",
+          submitLabel: "Anfrage zu dieser Immobilie senden",
+        };
+      }
       return {
         panelTitle: "¿Te interesa esta propiedad y quieres claridad legal?",
         panelDescription:
@@ -362,6 +680,42 @@ const PropertyDetail = () => {
     }
 
     if (topTopic === "new_build") {
+      if (language === "en") {
+        return {
+          panelTitle: "Interested in this home and want to move the purchase forward properly?",
+          panelDescription:
+            "If you have been comparing new-build or more modern stock, we can help you land this specific property with clear documentation, timings and next steps.",
+          formTitle: "Tell us what you need to confirm",
+          formDescription:
+            "Use this form to tell us if you want more detail about status, process, visit or real fit with your search.",
+          messagePlaceholder: "Message (for example: I am interested in this property and want to confirm availability or process)",
+          submitLabel: "Send interest for this property",
+        };
+      }
+      if (language === "fr") {
+        return {
+          panelTitle: "Ce bien vous interesse et vous voulez bien cadrer l'achat ?",
+          panelDescription:
+            "Si vous comparez du neuf ou des biens plus recents, nous pouvons vous aider a concretiser ce bien avec des documents, delais et prochaines etapes clairs.",
+          formTitle: "Dites-nous ce que vous souhaitez confirmer",
+          formDescription:
+            "Utilisez ce formulaire pour nous dire si vous voulez plus de details sur l'etat, le processus, la visite ou l'adaptation reelle a votre recherche.",
+          messagePlaceholder: "Message (par exemple : ce bien m'interesse et je veux confirmer la disponibilite ou le processus)",
+          submitLabel: "Envoyer mon interet pour ce bien",
+        };
+      }
+      if (language === "de") {
+        return {
+          panelTitle: "Interessiert Sie diese Immobilie und moechten Sie den Kauf sauber vorbereiten?",
+          panelDescription:
+            "Wenn Sie Neubau oder modernere Angebote vergleichen, helfen wir Ihnen dabei, diese konkrete Immobilie mit klaren Unterlagen, Zeitfenstern und naechsten Schritten einzuordnen.",
+          formTitle: "Sagen Sie uns, was Sie bestaetigen moechten",
+          formDescription:
+            "Nutzen Sie dieses Formular, wenn Sie mehr Details zu Status, Ablauf, Besichtigung oder zur echten Passung fuer Ihre Suche benoetigen.",
+          messagePlaceholder: "Nachricht (zum Beispiel: Ich interessiere mich fuer diese Immobilie und moechte Verfuegbarkeit oder Ablauf bestaetigen)",
+          submitLabel: "Interesse an dieser Immobilie senden",
+        };
+      }
       return {
         panelTitle: "¿Te interesa esta vivienda y quieres avanzar bien la compra?",
         panelDescription:
@@ -374,6 +728,42 @@ const PropertyDetail = () => {
       };
     }
 
+    if (language === "en") {
+      return {
+        panelTitle: "Interested in this property?",
+        panelDescription:
+          "If this home fits, this is the best moment to send the form so we can help you move forward with useful information, visits or next steps.",
+        formTitle: "Tell us what you are looking for",
+        formDescription:
+          "The clearer we understand the fit with this property or with your search, the better we can reply with the most useful next step.",
+        messagePlaceholder: "Message (optional)",
+        submitLabel: "Send interest",
+      };
+    }
+    if (language === "fr") {
+      return {
+        panelTitle: "Ce bien vous interesse ?",
+        panelDescription:
+          "Si ce bien vous correspond, c'est le meilleur moment pour nous envoyer le formulaire afin d'avancer avec des informations utiles, des visites ou les prochaines etapes.",
+        formTitle: "Dites-nous ce que vous recherchez",
+        formDescription:
+          "Plus nous comprenons clairement le lien avec ce bien ou avec votre recherche, mieux nous pourrons vous repondre avec le prochain pas le plus utile.",
+        messagePlaceholder: "Message (optionnel)",
+        submitLabel: "Envoyer mon interet",
+      };
+    }
+    if (language === "de") {
+      return {
+        panelTitle: "Interessieren Sie sich fuer diese Immobilie?",
+        panelDescription:
+          "Wenn diese Immobilie passt, ist jetzt der beste Moment, das Formular zu senden, damit wir mit nuetzlichen Informationen, Besichtigungen oder den naechsten Schritten helfen koennen.",
+        formTitle: "Sagen Sie uns, wonach Sie suchen",
+        formDescription:
+          "Je klarer wir die Passung zu dieser Immobilie oder zu Ihrer Suche verstehen, desto besser koennen wir mit dem sinnvollsten naechsten Schritt antworten.",
+        messagePlaceholder: "Nachricht (optional)",
+        submitLabel: "Interesse senden",
+      };
+    }
     return {
       panelTitle: "¿Te interesa esta propiedad?",
       panelDescription:
@@ -386,33 +776,33 @@ const PropertyDetail = () => {
     };
   })();
   const trustSignals = [
-    { icon: Shield, label: "Datos\nprotegidos" },
+    { icon: Shield, label: ui.trust.protectedData },
     topTopic === "mortgage"
-      ? { icon: Clock, label: "Hipoteca\nno residente" }
+      ? { icon: Clock, label: ui.trust.mortgage }
       : topTopic === "legal"
-        ? { icon: Shield, label: "Proceso\nmás claro" }
+        ? { icon: Shield, label: ui.trust.legal }
         : topTopic === "new_build"
-          ? { icon: Clock, label: "Compra\ncoordinada" }
-          : { icon: Clock, label: "Respuesta\nen 24h" },
-    { icon: Star, label: "15+ años\nexperiencia" },
+          ? { icon: Clock, label: ui.trust.newBuild }
+          : { icon: Clock, label: ui.trust.response },
+    { icon: Star, label: ui.trust.experience },
   ];
 
   const features = [
-    { icon: BedDouble, label: "Habitaciones", value: property.bedrooms },
-    { icon: Bath, label: "Baños", value: property.bathrooms },
-    ...(property.area_m2 ? [{ icon: Maximize, label: "Superficie", value: `${property.area_m2} m²` }] : []),
-    ...(property.built_area ? [{ icon: Ruler, label: "Construidos", value: `${property.built_area} m²` }] : []),
-    ...(property.year_built ? [{ icon: Calendar, label: "Año", value: property.year_built }] : []),
-    ...(property.floor != null ? [{ icon: ArrowUp, label: "Planta", value: typeof property.floor === "number" ? `${property.floor}ª` : property.floor }] : []),
-    ...(property.operation ? [{ icon: Building, label: "Operación", value: property.operation === "venta" ? "Venta" : property.operation === "alquiler" ? "Alquiler" : property.operation }] : []),
+    { icon: BedDouble, label: ui.features.bedrooms, value: property.bedrooms },
+    { icon: Bath, label: ui.features.bathrooms, value: property.bathrooms },
+    ...(property.area_m2 ? [{ icon: Maximize, label: ui.features.area, value: `${property.area_m2} m²` }] : []),
+    ...(property.built_area ? [{ icon: Ruler, label: ui.features.builtArea, value: `${property.built_area} m²` }] : []),
+    ...(property.year_built ? [{ icon: Calendar, label: ui.features.year, value: property.year_built }] : []),
+    ...(property.floor != null ? [{ icon: ArrowUp, label: ui.features.floor, value: typeof property.floor === "number" ? `${property.floor}ª` : property.floor }] : []),
+    ...(property.operation ? [{ icon: Building, label: ui.features.operation, value: property.operation === "venta" ? ui.features.sale : property.operation === "alquiler" ? ui.features.rent : property.operation }] : []),
   ];
 
   const amenities = [
-    ...(property.has_garage ? [{ icon: Car, label: "Garaje" }] : []),
-    ...(property.has_pool ? [{ icon: Waves, label: "Piscina" }] : []),
-    ...(property.has_terrace ? [{ icon: Sun, label: "Terraza" }] : []),
-    ...(property.has_elevator ? [{ icon: ArrowUp, label: "Ascensor" }] : []),
-    ...(property.has_garden ? [{ icon: Flower2, label: "Jardín" }] : []),
+    ...(property.has_garage ? [{ icon: Car, label: ui.amenities.garage }] : []),
+    ...(property.has_pool ? [{ icon: Waves, label: ui.amenities.pool }] : []),
+    ...(property.has_terrace ? [{ icon: Sun, label: ui.amenities.terrace }] : []),
+    ...(property.has_elevator ? [{ icon: ArrowUp, label: ui.amenities.elevator }] : []),
+    ...(property.has_garden ? [{ icon: Flower2, label: ui.amenities.garden }] : []),
   ];
 
   const energyCert = property.energy_cert
@@ -423,26 +813,35 @@ const PropertyDetail = () => {
   const socialShareUrl = propertyShareUrl(property);
   const propertyJsonLd = buildPropertySchema(property);
   const breadcrumbJsonLd = buildBreadcrumbSchema([
-    { name: "Inicio", url: SITE_URL },
-    { name: "Propiedades", url: `${SITE_URL}/propiedades` },
+    { name: ui.homeBreadcrumb, url: SITE_URL },
+    { name: ui.propertiesBreadcrumb, url: `${SITE_URL}/propiedades` },
     { name: property.title, url: propertyPageUrl },
   ]);
 
   const areaValue = property.area_m2 || property.surface_area;
   const locationLabel = [property.location, property.province].filter(Boolean).join(", ");
-  const seoTitle = `${property.title} | ${formatPrice(property.price)} | Legado Inmobiliaria`;
+  const seoTitle = `${property.title} | ${formatPrice(property.price, language)} | Legado Inmobiliaria`;
   const seoDesc = [
-    TYPE_LABELS[property.property_type] || property.property_type,
-    locationLabel ? `en ${locationLabel}` : undefined,
-    property.bedrooms ? `${property.bedrooms} dormitorios` : undefined,
-    property.bathrooms ? `${property.bathrooms} baños` : undefined,
+    getPropertyTypeLabel(property.property_type, language),
+    locationLabel ? `${language === "en" ? "in" : language === "fr" ? "a" : language === "de" ? "in" : "en"} ${locationLabel}` : undefined,
+    property.bedrooms ? `${property.bedrooms} ${ui.bedroomsUnit}` : undefined,
+    property.bathrooms ? `${property.bathrooms} ${ui.bathroomsUnit}` : undefined,
     areaValue ? `${areaValue} m²` : undefined,
     property.description
       ? property.description.replace(/\s+/g, " ").trim().slice(0, 120)
-      : "Una selección singular para compradores que buscan ubicación, imagen y valor patrimonial en la Costa Blanca.",
+      : ui.aboutFallback,
   ]
     .filter(Boolean)
     .join(" · ");
+  const propertyWebPageSchema = buildWebPageSchema({
+    name: seoTitle,
+    description: seoDesc,
+    path: propertyPageUrl.replace(SITE_URL, ""),
+    type: "ItemPage",
+    breadcrumb: breadcrumbJsonLd,
+    image: hasImages ? images[0] : undefined,
+    inLanguage: language === "en" ? "en" : language === "fr" ? "fr" : language === "de" ? "de" : "es",
+  });
 
   const handleCopyLink = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -466,7 +865,7 @@ const PropertyDetail = () => {
     }
   };
 
-  const whatsappShareText = `🏡 ${property.title} | ${formatPrice(property.price)}\n📍 ${property.location}${property.province ? `, ${property.province}` : ""}\n🛏 ${property.bedrooms} hab · 🚿 ${property.bathrooms} baños · 📐 ${property.area_m2 || property.surface_area} m²\n\n${socialShareUrl}`;
+  const whatsappShareText = `🏡 ${property.title} | ${formatPrice(property.price, language)}\n📍 ${property.location}${property.province ? `, ${property.province}` : ""}\n🛏 ${property.bedrooms} ${ui.bedroomsUnit} · 🚿 ${property.bathrooms} ${ui.bathroomsUnit} · 📐 ${property.area_m2 || property.surface_area} m²\n\n${socialShareUrl}`;
   const whatsappShareHref = `https://wa.me/?text=${encodeURIComponent(whatsappShareText)}`;
 
   const handleWhatsAppShare = () => {
@@ -476,8 +875,8 @@ const PropertyDetail = () => {
   const handleEmailShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    const subject = encodeURIComponent(`${property.title} | ${formatPrice(property.price)} — Legado Inmobiliaria`);
-    const body = encodeURIComponent(`Hola,\n\nTe comparto esta propiedad que podría interesarte:\n\n🏡 ${property.title}\n📍 ${property.location}${property.province ? `, ${property.province}` : ""}\n💶 ${formatPrice(property.price)}\n🛏 ${property.bedrooms} hab · 🚿 ${property.bathrooms} baños · 📐 ${property.area_m2 || property.surface_area} m²\n\nVer ficha completa: ${socialShareUrl}\n\nUn saludo,\nLegado Inmobiliaria`);
+    const subject = encodeURIComponent(`${property.title} | ${formatPrice(property.price, language)} — Legado Inmobiliaria`);
+    const body = encodeURIComponent(`${ui.shareIntro}\n\n${ui.shareEmailLead}\n\n🏡 ${property.title}\n📍 ${property.location}${property.province ? `, ${property.province}` : ""}\n💶 ${formatPrice(property.price, language)}\n🛏 ${property.bedrooms} ${ui.bedroomsUnit} · 🚿 ${property.bathrooms} ${ui.bathroomsUnit} · 📐 ${property.area_m2 || property.surface_area} m²\n\n${ui.shareEmailCta}: ${socialShareUrl}\n\n${ui.shareEmailClosing}\nLegado Inmobiliaria`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     trackShare({ method: "email", content_name: property.title, property_id: property.id, value: property.price });
   };
@@ -501,7 +900,14 @@ const PropertyDetail = () => {
         canonical={propertyPageUrl}
         ogImage={hasImages ? images[0] : `${SITE_URL}/og-image.jpg`}
         ogType="product"
-        jsonLd={[propertyJsonLd, breadcrumbJsonLd]}
+        keywords={[
+          property.title,
+          property.location,
+          property.province,
+          getPropertyTypeLabel(property.property_type, language),
+          "comprar vivienda Costa Blanca",
+        ].filter(Boolean).join(", ")}
+        jsonLd={[propertyJsonLd, breadcrumbJsonLd, propertyWebPageSchema]}
       />
       <Navbar />
 
@@ -562,7 +968,7 @@ const PropertyDetail = () => {
             to="/propiedades"
             className="bg-white/95 backdrop-blur-sm shadow-md rounded-full px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-1.5 md:gap-2 text-foreground text-xs md:text-sm hover:bg-white transition-all border border-border/50"
           >
-            <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" /> Catálogo
+            <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" /> {ui.shareCatalog}
           </Link>
 
           {/* WhatsApp share */}
@@ -572,7 +978,7 @@ const PropertyDetail = () => {
             rel="noopener noreferrer"
             onClick={handleWhatsAppShare}
             className="bg-white/95 backdrop-blur-sm shadow-md rounded-full px-3 py-1.5 flex items-center gap-1.5 text-foreground text-xs hover:bg-white transition-all border border-border/50"
-            title="Compartir en WhatsApp"
+            title={ui.shareWhatsApp}
           >
             <svg viewBox="0 0 32 32" className="w-3.5 h-3.5 shrink-0 fill-[#25D366]">
               <path d="M16.004 0h-.008C7.174 0 0 7.176 0 16c0 3.5 1.128 6.744 3.046 9.378L1.054 31.29l6.154-1.97A15.9 15.9 0 0016.004 32C24.826 32 32 24.822 32 16S24.826 0 16.004 0zm9.35 22.614c-.396 1.116-1.958 2.042-3.21 2.312-.858.182-1.978.328-5.752-1.236-4.828-2.002-7.932-6.904-8.174-7.222-.232-.318-1.95-2.598-1.95-4.956s1.234-3.516 1.672-3.996c.438-.48.958-.6 1.278-.6.318 0 .636.002.914.016.294.016.688-.112 1.076.82.396.956 1.352 3.296 1.47 3.534.12.238.198.516.038.834-.16.318-.238.516-.478.796-.238.278-.502.622-.716.834-.238.238-.486.496-.21.974.278.478 1.236 2.038 2.654 3.302 1.822 1.626 3.358 2.128 3.836 2.366.478.238.756.198 1.034-.12.278-.318 1.194-1.394 1.512-1.874.318-.478.636-.396 1.074-.238.438.16 2.794 1.318 3.272 1.556.478.238.796.358.914.556.12.198.12 1.146-.276 2.262z" />
@@ -584,7 +990,7 @@ const PropertyDetail = () => {
           <button
             onClick={handleFacebookShare}
             className="bg-white/95 backdrop-blur-sm shadow-md rounded-full px-3 py-1.5 flex items-center gap-1.5 text-foreground text-xs hover:bg-white transition-all border border-border/50"
-            title="Compartir en Facebook"
+            title={ui.shareFacebook}
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0 fill-[#1877F2]">
               <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.269h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
@@ -605,12 +1011,12 @@ const PropertyDetail = () => {
           <button
             onClick={handleCopyLink}
             className="bg-white/95 backdrop-blur-sm shadow-md rounded-full px-3 py-1.5 flex items-center gap-1.5 text-foreground text-xs hover:bg-white transition-all border border-border/50"
-            title="Copiar enlace"
+            title={ui.shareCopy}
           >
             {copied
               ? <Check className="w-3.5 h-3.5 text-primary" />
               : <Copy className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{copied ? "¡Copiado!" : "Copiar"}</span>
+            <span className="hidden sm:inline">{copied ? ui.copied : ui.copy}</span>
           </button>
         </div>
 
@@ -644,7 +1050,7 @@ const PropertyDetail = () => {
               </div>
 
               <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-gold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
-                {formatPrice(property.price)}
+                {formatPrice(property.price, language)}
               </span>
             </div>
           </div>
@@ -780,7 +1186,7 @@ const PropertyDetail = () => {
               {images.length > 3 && (
                 <div className="reveal-up">
                   <h2 className="font-serif text-2xl md:text-3xl font-bold mb-6">
-                    {ui.gallery} <span className="text-gradient-gold">({images.length} fotos)</span>
+                    {ui.gallery} <span className="text-gradient-gold">({images.length} {ui.photosLabel})</span>
                   </h2>
                   <div className="luxury-divider mb-6" />
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -825,12 +1231,12 @@ const PropertyDetail = () => {
                 <div className="glass-premium rounded-2xl p-5 sm:p-8 text-center border-glow-gold enter-fade-up" style={{ animationDelay: "400ms" }}>
                   <p className="text-xs text-muted-foreground uppercase tracking-[0.2em] mb-3">{ui.priceLabel}</p>
                   <p className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-gold mb-4 break-words">
-                    {formatPrice(property.price)}
+                    {formatPrice(property.price, language)}
                   </p>
                   <div className="luxury-divider mb-4" />
                   <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                     {property.province && <span className="break-words">{property.city}, {property.province}</span>}
-                    <span>Ref: {property.reference || property.id.slice(0, 8).toUpperCase()}</span>
+                    <span>{ui.refLabel}: {property.reference || property.id.slice(0, 8).toUpperCase()}</span>
                   </div>
                 </div>
 
@@ -872,12 +1278,12 @@ const PropertyDetail = () => {
                       {ui.doNotReset}
                     </h4>
                     <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                      Si todavía quieres comparar antes de enviar el formulario, sigue por {topArea.label} y abre más fichas alineadas con esta búsqueda.
+                      {ui.usefulNextDescription(topArea.label)}
                     </p>
                     <div className="mt-4 flex flex-col gap-2">
                       <Link to={`${topArea.href}#live-inventory`}>
                         <Button variant="outline" className="w-full border-primary/35 hover:bg-primary/10">
-                          Seguir por {topArea.label}
+                          {ui.continueArea(topArea.label)}
                         </Button>
                       </Link>
                       <button

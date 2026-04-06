@@ -9,7 +9,7 @@ import SEOHead from "@/components/SEOHead";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBlogPost } from "@/hooks/useBlog";
 import { supabase } from "@/integrations/supabase/client";
-import { buildBreadcrumbSchema, buildBlogPostingSchema, extractFaqSchema } from "@/lib/seo-schemas";
+import { buildBreadcrumbSchema, buildBlogPostingSchema, buildWebPageSchema, extractFaqSchema } from "@/lib/seo-schemas";
 import { useTranslation } from "@/contexts/LanguageContext";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import TableOfContents, { processArticleContent } from "@/components/TableOfContents";
@@ -145,6 +145,14 @@ const BlogPostPage = () => {
     { name: "Blog", url: `${SITE_URL}/blog` },
     { name: post.title, url: `${SITE_URL}/blog/${post.slug}` },
   ]);
+  const articlePageSchema = buildWebPageSchema({
+    name: seoTitle,
+    description: seoDesc,
+    path: `/blog/${post.slug}`,
+    breadcrumb: breadcrumbJsonLd,
+    image: post.cover_image || undefined,
+    inLanguage: language === "en" ? "en" : language === "fr" ? "fr" : language === "de" ? "de" : "es",
+  });
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -162,7 +170,7 @@ const BlogPostPage = () => {
         articleModifiedTime={post.updated_at}
         articleSection={post.category?.name}
         articleTags={articleTags}
-        jsonLd={[blogPostingJsonLd, breadcrumbJsonLd, ...(faqJsonLd ? [faqJsonLd] : [])]}
+        jsonLd={[blogPostingJsonLd, breadcrumbJsonLd, articlePageSchema, ...(faqJsonLd ? [faqJsonLd] : [])]}
       />
       <Navbar />
 

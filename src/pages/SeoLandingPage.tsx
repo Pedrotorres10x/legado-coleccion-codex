@@ -20,7 +20,7 @@ import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SITE_URL } from "@/lib/site";
-import { buildBreadcrumbSchema } from "@/lib/seo-schemas";
+import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo-schemas";
 import { seoLandingPages } from "@/lib/seoLandingPages";
 import { useExternalProperties } from "@/hooks/useExternalProperties";
 import { recordAreaIntent } from "@/lib/personalization";
@@ -621,6 +621,13 @@ const SeoLandingPage = ({ slug }: SeoLandingPageProps) => {
     { name: page.h1, url: `${SITE_URL}/${page.slug}` },
   ]);
   const faqSchema = buildFaqSchema(page.faq);
+  const landingPageSchema = buildWebPageSchema({
+    name: page.seoTitle,
+    description: page.seoDescription,
+    path: `/${page.slug}`,
+    type: "CollectionPage",
+    breadcrumb,
+  });
   const catalogHref = buildCatalogHref(page.catalogParams);
   const buyerIntent = buyerIntentSections[page.slug];
 
@@ -630,7 +637,8 @@ const SeoLandingPage = ({ slug }: SeoLandingPageProps) => {
         title={page.seoTitle}
         description={page.seoDescription}
         canonical={`${SITE_URL}/${page.slug}`}
-        jsonLd={[breadcrumb, faqSchema]}
+        keywords={[page.h1, "property for sale Costa Blanca", "Alicante real estate", "Legado Inmobiliaria"].join(", ")}
+        jsonLd={[breadcrumb, landingPageSchema, faqSchema]}
       />
       <Navbar />
 
