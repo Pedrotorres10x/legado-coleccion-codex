@@ -27,6 +27,7 @@ const ThankYou = lazy(() => import("./pages/ThankYou"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPostPage = lazy(() => import("./pages/BlogPost"));
 
+const GuiaResidentes = lazy(() => import("./pages/GuiaResidentes"));
 const CookieBanner = lazy(() => import("./components/CookieBanner"));
 const PushNotificationModal = lazy(() => import("./components/PushNotificationModal"));
 import ContentProtection from "./components/ContentProtection";
@@ -108,6 +109,7 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/gracias" element={<ThankYou />} />
+            <Route path="/guia-residentes" element={<GuiaResidentes />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

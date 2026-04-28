@@ -6,7 +6,7 @@
       "destination": "https://vrywyqpxmmzikaedjoxt.supabase.co/functions/v1/property-og?slug=:slug"
     },
     {
-      "source": "/((?!og\\.jpg|guia-residentes\\.html|assets/|favicon|robots|sitemap|sw\\.js|placeholder|google).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
