@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:enterprise-seo:verify",
+    "build": "npm run build:enterprise-seo:verify && node scripts/copy-guia.mjs",
     "build:vite": "vite build",
     "build:enterprise-seo": "npm run build:vite && node scripts/enterprise-seo.mjs",
     "build:enterprise-seo:verify": "npm run build:vite && node scripts/enterprise-seo.mjs && node scripts/verify-enterprise-seo.mjs",
@@ -20,7 +20,8 @@
     "supabase:link": "npx supabase link --project-ref vrywyqpxmmzikaedjoxt",
     "supabase:deploy:ai": "npx supabase functions deploy translate && npx supabase functions deploy fill-blog-images && npx supabase functions deploy generate-blog-article && npx supabase functions deploy refresh-featured && npx supabase functions deploy similar-properties && npx supabase functions deploy meta-capi",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "copy-guia": "node scripts/copy-guia.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

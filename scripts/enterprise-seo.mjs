@@ -313,16 +313,3 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-// ── GUIA RESIDENTES: write standalone HTML from file ──
-try {
-  const guiaHtmlPath = path.join(ROOT, "scripts", "guia-residentes.html");
-  const guiaHtml = await fs.readFile(guiaHtmlPath, "utf-8");
-  const guiaDir = path.join(DIST_DIR, "guia-residentes");
-  await fs.mkdir(guiaDir, { recursive: true });
-  await fs.writeFile(path.join(guiaDir, "index.html"), guiaHtml, "utf-8");
-  console.log("✓ Guia residentes pre-rendered to dist/guia-residentes/index.html");
-} catch (e) {
-  console.warn("Guia residentes not found, skipping:", e.message);
-}
-
