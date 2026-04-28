@@ -1,13 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/share/:slug",
-      "destination": "https://vrywyqpxmmzikaedjoxt.supabase.co/functions/v1/property-og?slug=:slug"
+      "src": "/share/(?P<slug>[^/]+)",
+      "dest": "https://vrywyqpxmmzikaedjoxt.supabase.co/functions/v1/property-og?slug=$slug"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
