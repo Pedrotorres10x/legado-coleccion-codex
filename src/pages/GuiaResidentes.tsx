@@ -1,25 +1,18 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet";
 
 const GuiaResidentes = () => {
   useEffect(() => {
+    const prev = document.title;
+    document.title = "Tu Hogar en España — Guía del Comprador · Legado Colección";
     window.scrollTo(0, 0);
+    return () => { document.title = prev; };
   }, []);
 
   return (
-    <>
-      <Helmet>
-        <title>Tu Hogar en España — Guía del Comprador · Legado Colección</title>
-        <meta name="description" content="Has visto la vivienda. Has sentido que es la correcta. Toda la información que necesitas para tomar la decisión con plena certeza." />
-        <meta property="og:title" content="Tu hogar en España — Guía del comprador · Legado Colección" />
-        <meta property="og:description" content="Has visto la vivienda. Has sentido que es la correcta. Aquí tienes todo lo que necesitas saber antes de firmar — sin letra pequeña, con plena seguridad jurídica." />
-        <meta property="og:image" content="https://www.legadocoleccion.es/og.jpg" />
-        <meta property="og:url" content="https://www.legadocoleccion.es/guia-residentes" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Helmet>
-      <div id="guia-residentes-root" dangerouslySetInnerHTML={{ __html: GUIA_HTML }} />
-    </>
+    <div
+      id="guia-residentes-root"
+      dangerouslySetInnerHTML={{ __html: GUIA_HTML }}
+    />
   );
 };
 
