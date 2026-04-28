@@ -1,16 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/share/(?P<slug>[^/]+)",
-      "dest": "https://vrywyqpxmmzikaedjoxt.supabase.co/functions/v1/property-og?slug=$slug"
+      "source": "/share/:slug",
+      "destination": "https://vrywyqpxmmzikaedjoxt.supabase.co/functions/v1/property-og?slug=:slug"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!og\\.jpg|guia-residentes\\.html|assets/|favicon|robots|sitemap|sw\\.js|placeholder|google).*)",
+      "destination": "/index.html"
     }
   ]
 }
