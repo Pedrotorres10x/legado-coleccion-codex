@@ -1,0 +1,3 @@
+-- Migration applied directly to production on 2026-04-06.
+-- Placeholder to align local migration history with remote.
+-- See Supabase dashboard for actual changes made on that date.
