@@ -5,6 +5,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function escapeHtml(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -32,6 +41,16 @@ serve(async (req) => {
     const topAreaSlug = metadata?.topAreaSlug;
     const topTopic = metadata?.topTopic;
 
+    // Escape all user-supplied values before inserting into HTML
+    const eName = escapeHtml(name);
+    const eEmail = escapeHtml(email);
+    const ePhone = escapeHtml(phone);
+    const eMessage = escapeHtml(message);
+    const ePropertyTitle = escapeHtml(property_title);
+    const eIntentStage = escapeHtml(intentStage);
+    const eTopAreaSlug = escapeHtml(topAreaSlug);
+    const eTopTopic = escapeHtml(topTopic);
+
     const htmlContent = `
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
@@ -39,17 +58,17 @@ serve(async (req) => {
   <div style="max-width:600px;margin:0 auto;padding:32px 20px;">
     <h2 style="color:#b8860b;font-size:13px;letter-spacing:3px;text-transform:uppercase;margin:0 0 24px;">Nuevo Lead · Legado Inmobiliaria</h2>
     <table style="width:100%;border-collapse:collapse;">
-      <tr><td style="padding:8px 0;color:#999;font-size:13px;width:120px;">Nombre</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;font-weight:600;">${name}</td></tr>
-      <tr><td style="padding:8px 0;color:#999;font-size:13px;">Email</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;"><a href="mailto:${email}" style="color:#b8860b;">${email}</a></td></tr>
-      ${phone ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Teléfono</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;"><a href="tel:${phone}" style="color:#b8860b;">${phone}</a></td></tr>` : ""}
-      ${property_title ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Propiedad</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${property_title}</td></tr>` : ""}
-      ${message ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;vertical-align:top;">Mensaje</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${message}</td></tr>` : ""}
-      ${intentStage || intentScore != null ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Intento</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${intentStage || "unknown"}${intentScore != null ? ` · ${intentScore}/100` : ""}</td></tr>` : ""}
-      ${topAreaSlug ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Zona top</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${topAreaSlug}</td></tr>` : ""}
-      ${topTopic ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Tema top</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${topTopic}</td></tr>` : ""}
+      <tr><td style="padding:8px 0;color:#999;font-size:13px;width:120px;">Nombre</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;font-weight:600;">${eName}</td></tr>
+      <tr><td style="padding:8px 0;color:#999;font-size:13px;">Email</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;"><a href="mailto:${eEmail}" style="color:#b8860b;">${eEmail}</a></td></tr>
+      ${phone ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Teléfono</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;"><a href="tel:${ePhone}" style="color:#b8860b;">${ePhone}</a></td></tr>` : ""}
+      ${property_title ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Propiedad</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${ePropertyTitle}</td></tr>` : ""}
+      ${message ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;vertical-align:top;">Mensaje</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${eMessage}</td></tr>` : ""}
+      ${intentStage || intentScore != null ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Intento</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${eIntentStage || "unknown"}${intentScore != null ? ` · ${escapeHtml(intentScore)}/100` : ""}</td></tr>` : ""}
+      ${topAreaSlug ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Zona top</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${eTopAreaSlug}</td></tr>` : ""}
+      ${topTopic ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">Tema top</td><td style="padding:8px 0;color:#1a1a1a;font-size:15px;">${eTopTopic}</td></tr>` : ""}
     </table>
     <hr style="border:none;border-top:1px solid #e0d5c5;margin:24px 0;" />
-    <p style="color:#999;font-size:11px;">Enviado automáticamente desde ${configuredSiteUrl || "la web"}</p>
+    <p style="color:#999;font-size:11px;">Enviado automáticamente desde ${escapeHtml(configuredSiteUrl || "la web")}</p>
   </div>
 </body></html>`;
 

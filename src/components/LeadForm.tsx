@@ -290,7 +290,7 @@ const LeadForm = ({
         <Checkbox id="gdpr" checked={gdprAccepted} onCheckedChange={(checked) => setGdprAccepted(checked === true)} />
         <label htmlFor="gdpr" className="text-muted-foreground text-xs cursor-pointer leading-snug">
           Acepto la{" "}
-          <Link to="/politica-privacidad" target="_blank" className="text-primary underline hover:text-primary/80">
+          <Link to="/privacidad" target="_blank" className="text-primary underline hover:text-primary/80">
             política de privacidad
           </Link>{" "}
           y el tratamiento de mis datos para gestionar mi consulta.

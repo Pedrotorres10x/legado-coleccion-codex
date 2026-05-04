@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { trackLead, trackInitiateContact } from "@/lib/metaPixel";
 import { getUtmSource } from "@/lib/utm";
-import { isDisposableEmail, checkSessionLimit, incrementSessionCount, createInteractionTracker } from "@/lib/antispam";
+import { isDisposableEmail, checkSessionLimit, incrementSessionCount, createInteractionTracker, containsSpamPatterns, checkCooldown, markSubmission } from "@/lib/antispam";
 import { propertyUrl } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createLocalLead, syncLeadStatusToCRM } from "@/lib/leads";
@@ -50,17 +50,28 @@ const MiniLeadForm = forwardRef<HTMLDivElement, {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [gdprAccepted, setGdprAccepted] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const mountedAt = useRef(Date.now());
   const interactionRef = useRef(createInteractionTracker());
+  const FORM_ID = `mini-lead-${propertyId}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
+    if (honeypot) return;
 
     if (Date.now() - mountedAt.current < 2000) return;
     if (!interactionRef.current.hasEnoughInteraction()) return;
     if (isDisposableEmail(email)) {
       toast({ title: "Email no válido", description: "Usa un email permanente.", variant: "destructive" });
+      return;
+    }
+    if (containsSpamPatterns(name)) {
+      toast({ title: "Datos no válidos", description: "Revisa los campos.", variant: "destructive" });
+      return;
+    }
+    if (checkCooldown(FORM_ID, email)) {
+      toast({ title: "Demasiadas solicitudes", description: "Espera unos minutos.", variant: "destructive" });
       return;
     }
     if (checkSessionLimit()) {
@@ -87,6 +98,7 @@ const MiniLeadForm = forwardRef<HTMLDivElement, {
       const insertedLead = await createLocalLead(localLead);
 
       incrementSessionCount();
+      markSubmission(FORM_ID);
 
       await syncLeadStatusToCRM(insertedLead.id, {
         full_name: name,
@@ -141,6 +153,8 @@ const MiniLeadForm = forwardRef<HTMLDivElement, {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2.5" onClick={(e) => e.stopPropagation()}>
+      {/* Honeypot: invisible to humans, filled by bots */}
+      <input type="text" name="website_url" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }} aria-hidden="true" />
       <p className="text-foreground font-semibold text-sm leading-snug line-clamp-1 mb-1">{propertyTitle}</p>
       <Input
         placeholder="Tu nombre *"
@@ -172,7 +186,7 @@ const MiniLeadForm = forwardRef<HTMLDivElement, {
         <Checkbox id={`gdpr-${propertyId}`} checked={gdprAccepted} onCheckedChange={(c) => setGdprAccepted(c === true)} className="mt-0.5 h-3.5 w-3.5" />
         <label htmlFor={`gdpr-${propertyId}`} className="text-muted-foreground text-[10px] leading-snug cursor-pointer">
           Acepto la{" "}
-          <a href="/politica-privacidad" target="_blank" className="text-primary underline">política de privacidad</a>
+          <a href="/privacidad" target="_blank" className="text-primary underline">política de privacidad</a>
         </label>
       </div>
       <Button

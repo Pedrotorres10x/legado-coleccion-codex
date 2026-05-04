@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 const GuiaResidentes = () => {
   const [html, setHtml] = useState<string>("");
@@ -9,9 +10,8 @@ const GuiaResidentes = () => {
     fetch("/guia-residentes-content.html")
       .then(r => r.text())
       .then(text => {
-        // Extract body content only
         const match = text.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-        setHtml(match ? match[1] : text);
+        setHtml(sanitizeHtml(match ? match[1] : text));
       })
       .catch(() => setHtml("<p>Error cargando el contenido.</p>"));
     return () => { document.title = "Legado Colección"; };
